@@ -12,11 +12,11 @@ Prinsip penentuan stack: **build cepat dalam 5 hari bersama AI coding agent, min
 | Frontend + Backend | **Next.js 15 (App Router) + TypeScript** | Full-stack dalam satu repo (API routes/server actions) → lebih cepat untuk AI agent membangun dalam 5 hari dibanding split repo frontend/backend. SSR/ISR bagus untuk halaman tamu (read-heavy, butuh cepat & SEO). |
 | Styling/UI | **Tailwind CSS + shadcn/ui** | Cepat dibangun agent, konsisten desain, mudah dikustomisasi per tema. |
 | Database | **PostgreSQL (via Supabase)** | Supabase = Postgres + Auth + Storage + Realtime dalam satu managed service → menghilangkan kerja devops setup auth/storage dari nol. |
-| ORM | **Prisma** | Schema-as-code, migrations otomatis, sangat ramah untuk AI agent generate & modifikasi skema. |
-| Auth | **Supabase Auth** (email/password + OTP WA opsional via custom flow) | Bawaan, cepat, ada Row Level Security (RLS) terintegrasi dengan Postgres. |
+| ORM | **Prisma (dengan PrismaPg Adapter)** | Schema-as-code, migrations otomatis, terintegrasi stabil dengan Supabase Connection Pooler. |
+| Auth | **Custom JWT HTTP-Only Cookies (Admin) & Guest Checkout (Klien)** | Lebih cepat dibangun, tidak bergantung pada library berat, cocok untuk model guest checkout tanpa perlu akun. |
 | File storage (foto/musik/video) | **Supabase Storage** (atau Cloudflare R2 jika volume besar di Fase 2) | Terintegrasi langsung dengan auth/RLS. |
 | Payment Gateway | **Midtrans Snap** (VA, QRIS, e-wallet, kartu) sebagai utama, fallback transfer manual + upload bukti | Paling umum & cepat diintegrasikan untuk bisnis Indonesia; sandbox tersedia sejak hari 1. |
-| Notifikasi WA | **Fonnte / Wablas (WhatsApp API non-official)** untuk MVP → migrasi ke **WhatsApp Cloud API resmi (Meta)** di Fase 2 | Approval WA Business API resmi bisa lambat; provider ini bisa langsung dipakai hari 1. |
+| Notifikasi WA | **Wamify (WhatsApp API)** untuk MVP → migrasi ke **WhatsApp Cloud API resmi (Meta)** di Fase 2 | Approval WA Business API resmi bisa lambat; Wamify bisa langsung dipakai hari 1 dan mudah integrasinya. |
 | Notifikasi Email | **Resend** | API sederhana, cepat diintegrasikan dengan React Email templates. |
 | Hosting/Deploy | **Vercel** (Next.js app) + **Supabase Cloud** (DB/Auth/Storage) | Zero-devops: git push → auto deploy, edge network otomatis, wildcard subdomain didukung. |
 | CI/CD | **GitHub Actions** (lint, typecheck, test) + **Vercel auto-deploy** dari branch `main`/preview dari PR | Standar, murah setup. |

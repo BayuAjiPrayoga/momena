@@ -1,7 +1,7 @@
 # Sprint 5 Hari — Momena Labs MVP
 Cara pakai: setiap hari punya **tujuan**, **urutan task**, dan **contoh prompt** yang bisa Anda paste langsung ke chat agent di Antigravity (mode Planning untuk task besar, Fast untuk task kecil/berulang). Selalu buka sesi dengan agent membaca `AGENTS.md`, `01_PRD_Momena_Labs.md`, dan `02_ARSITEKTUR_DEVOPS.md` (taruh ketiganya di `/docs`).
 
-**Sebelum Hari 1:** siapkan akun Vercel, Supabase, Midtrans (sandbox), Fonnte/Wablas, Resend, dan domain `momena.id` (atau domain sementara) — ini pekerjaan manusia, tidak bisa didelegasikan ke agent.
+**Sebelum Hari 1:** siapkan akun Vercel, Supabase, Midtrans (sandbox), Wamify, Resend, dan domain `momena.id` (atau domain sementara) — ini pekerjaan manusia, tidak bisa didelegasikan ke agent.
 
 ---
 
@@ -48,12 +48,12 @@ Contoh prompt:
 Task:
 1. Route `/u/[orderSlug]/[guestSlug]` (SSR + ISR) yang me-render komponen tema sesuai `Theme.componentKey` dengan data dari `Order` + personalisasi nama tamu dari `Guest`.
 2. Fitur di dalam halaman tamu: countdown, galeri, maps+calendar, RSVP form (submit ke `/api/orders/:id/rsvp`), buku ucapan, amplop digital, audio player, tombol share WA per-tamu.
-3. Integrasi Fonnte/Wablas: kirim WA otomatis saat order dibuat, payment sukses, undangan live, reminder H-1.
+3. Integrasi Wamify: kirim WA otomatis saat order dibuat, payment sukses, undangan live, reminder H-1.
 4. Integrasi Resend: email cadangan untuk notifikasi yang sama.
 5. Rate limiting sederhana untuk endpoint RSVP/guestbook (cegah spam).
 
 Contoh prompt:
-> "Bangun route publik /u/[orderSlug]/[guestSlug] sesuai modul C di PRD, render via themes/registry.ts berdasarkan Theme.componentKey milik order tsb. Pastikan ISR dengan revalidate wajar (misal 60 detik) agar update data klien cepat terlihat tamu. Tambahkan RSVP dan guestbook form yang submit ke server action. Setelah itu, buat helper /lib/notifications/wa.ts untuk kirim pesan via Fonnte, dan panggil di titik: order dibuat, payment sukses, undangan live."
+> "Bangun route publik /u/[orderSlug]/[guestSlug] sesuai modul C di PRD, render via themes/registry.ts berdasarkan Theme.componentKey milik order tsb. Pastikan ISR dengan revalidate wajar (misal 60 detik) agar update data klien cepat terlihat tamu. Tambahkan RSVP dan guestbook form yang submit ke server action. Setelah itu, buat helper /lib/wamify.ts untuk kirim pesan via Wamify, dan panggil di titik: order dibuat, payment sukses, undangan live."
 
 **Definisi selesai Hari 3:** membuka link tamu di HP menampilkan undangan lengkap & fungsional, RSVP tersimpan ke DB, WA notifikasi terkirim di sandbox/testing number.
 
@@ -64,7 +64,7 @@ Contoh prompt:
 **Tujuan:** klien bisa self-service kelola order sendiri, admin bisa mengawasi semua order & tema tanpa Excel/WA manual.
 
 Task:
-1. Dashboard klien (`/(customer)/dashboard`, protected via Supabase Auth): status order, edit data (dalam limit revisi paket), daftar tamu + status RSVP, rekap grafik, ekspor ucapan.
+1. Dashboard klien (`/(client)/client/[orderId]`, diakses via link khusus): status order, daftar tamu + status RSVP, rekap statistik tamu, daftar pesan buku tamu.
 2. Dashboard admin (`/(admin)/admin`, role-gated): kanban order (drag status), CRUD tema, CRUD paket & harga, antrean verifikasi pembayaran manual, moderasi guestbook, laporan penjualan dasar (chart sederhana).
 3. Role-based access: `Admin.role` menentukan menu yang tampil (Super Admin vs Production vs Support).
 
