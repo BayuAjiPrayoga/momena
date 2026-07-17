@@ -61,7 +61,7 @@ model Customer {
   name       String
   email      String   @unique
   phone      String
-  authUserId String   @unique // link ke Supabase auth.users
+  authUserId String?  @unique // link ke Supabase auth.users
   orders     Order[]
   createdAt  DateTime @default(now())
 }
@@ -81,9 +81,9 @@ model Order {
   package     Package     @relation(fields: [packageId], references: [id])
   status      OrderStatus @default(NEW)
   eventData   Json        // nama mempelai/anak, tanggal, lokasi, cerita (fleksibel per kategori)
-  mediaAssets Json        // urls foto/galeri/musik
+  mediaAssets Json?       // urls foto/galeri/musik
   giftInfo    Json?       // rekening/QRIS
-  slug        String      @unique // subdomain: {slug}.momena.id
+  slug        String?     @unique // subdomain: {slug}.momena.id
   activeUntil DateTime?
   guests      Guest[]
   payments    Payment[]

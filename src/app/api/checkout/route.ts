@@ -1,90 +1,109 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSnapTransaction } from "@/lib/midtrans";
 import { fullBookingSchema } from "@/lib/validations/booking";
+import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
-
-// Harga paket (akan dari DB saat Prisma aktif)
-const packagePrices: Record<string, number> = {
-  "pkg-starter": 99000,
-  "pkg-populer": 199000,
-  "pkg-premium": 399000,
-};
-
-const packageNames: Record<string, string> = {
-  "pkg-starter": "Starter",
-  "pkg-populer": "Populer",
-  "pkg-premium": "Premium",
-};
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Validate with Zod
     const parseResult = fullBookingSchema.safeParse(body);
     if (!parseResult.success) {
-      const firstError = parseResult.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "Data tidak valid" },
+        { error: parseResult.error.issues[0]?.message || "Data tidak valid" },
         { status: 400 }
       );
     }
 
     const data = parseResult.data;
-    const price = packagePrices[data.packageId];
 
-    if (!price) {
-      return NextResponse.json(
-        { error: "Paket tidak ditemukan" },
-        { status: 400 }
-      );
+    // Ambil data paket dan tema
+    const pkg = await prisma.package.findUnique({ where: { id: data.packageId } });
+    const theme = await prisma.theme.findUnique({ where: { slug: data.themeSlug } });
+
+    if (!pkg || !theme) {
+      return NextResponse.json({ error: "Paket atau tema tidak valid" }, { status: 400 });
     }
 
-    // Generate unique order ID
-    const orderId = `MOM-${Date.now()}-${nanoid(6)}`;
+    const orderNumber = `MOM-${Date.now()}-${nanoid(6)}`;
 
-    /**
-     * TODO: Saat Prisma/DB aktif, lakukan:
-     * 1. Upsert Customer (berdasarkan email)
-     * 2. Create Order record (status: PENDING_PAYMENT)
-     * 3. Create Guest records (jika ada)
-     *
-     * Untuk sekarang kita langsung ke Midtrans.
-     */
+    // 1. Upsert Customer (Guest checkout = pakai email)
+    const customer = await prisma.customer.upsert({
+      where: { email: data.customerEmail },
+      update: {
+        name: data.customerName,
+        phone: data.customerPhone,
+      },
+      create: {
+        name: data.customerName,
+        email: data.customerEmail,
+        phone: data.customerPhone,
+      }
+    });
 
-    // Cek apakah Midtrans keys tersedia
+    // Format event data (JSON)
+    const eventData = {
+      person1Name: data.person1Name,
+      person1FullName: data.person1FullName,
+      person1Parents: data.person1Parents,
+      person2Name: data.person2Name,
+      person2FullName: data.person2FullName,
+      person2Parents: data.person2Parents,
+      akadDate: data.akadDate,
+      akadTime: data.akadTime,
+      akadVenue: data.akadVenue,
+      akadAddress: data.akadAddress,
+      akadMapsUrl: data.akadMapsUrl,
+      resepsiDate: data.resepsiDate,
+      resepsiTime: data.resepsiTime,
+      resepsiVenue: data.resepsiVenue,
+      resepsiAddress: data.resepsiAddress,
+      resepsiMapsUrl: data.resepsiMapsUrl,
+    };
+
+    // 2. Create Order
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        customerId: customer.id,
+        categoryId: theme.categoryId,
+        themeId: theme.id,
+        packageId: pkg.id,
+        status: "PENDING_PAYMENT",
+        eventData: JSON.stringify(eventData), // Simpan data acara
+      }
+    });
+
     if (!process.env.MIDTRANS_SERVER_KEY) {
-      // Jika belum ada key Midtrans, kembalikan dummy response
-      // agar flow tetap bisa ditest secara UI
+      // Dummy mode kalau belum di set
       return NextResponse.json({
-        orderId,
+        orderId: orderNumber,
         snapToken: null,
         redirectUrl: null,
-        message: "Midtrans belum dikonfigurasi. Set MIDTRANS_SERVER_KEY di .env.local untuk mengaktifkan pembayaran.",
-        // Simulasi: langsung berhasil
-        demo: true,
+        demo: true
       });
     }
 
-    // Create Midtrans Snap transaction
+    // 3. Create Midtrans Transaction
     const snap = await createSnapTransaction({
-      orderId,
-      grossAmount: price,
-      customerName: data.customerName,
-      customerEmail: data.customerEmail,
-      customerPhone: data.customerPhone,
-      itemName: `Undangan Digital — Paket ${packageNames[data.packageId] || "Custom"}`,
+      orderId: orderNumber,
+      grossAmount: pkg.price,
+      customerName: customer.name,
+      customerEmail: customer.email,
+      customerPhone: customer.phone || "",
+      itemName: `Momena - ${theme.name} (${pkg.name})`,
     });
 
     return NextResponse.json({
-      orderId,
+      orderId: orderNumber,
       snapToken: snap.token,
       redirectUrl: snap.redirect_url,
     });
   } catch (error: any) {
     console.error("Checkout error:", error);
     return NextResponse.json(
-      { error: error?.message || "Terjadi kesalahan server" },
+      { error: "Terjadi kesalahan server" },
       { status: 500 }
     );
   }
