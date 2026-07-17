@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, Sparkles, Crown, Star } from "lucide-react";
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Harga & Paket",
@@ -8,78 +9,13 @@ export const metadata: Metadata = {
     "Pilih paket undangan digital yang sesuai kebutuhan Anda. Mulai dari Rp 99.000.",
 };
 
-/* Placeholder data — akan diganti Prisma query saat DB aktif */
-const packages = [
-  {
-    id: "pkg-starter",
-    name: "Starter",
-    price: 99000,
-    icon: Star,
-    desc: "Untuk yang butuh undangan simpel & elegan.",
-    maxGuests: 100,
-    maxPhotos: 5,
-    maxRevisions: 1,
-    features: [
-      "RSVP",
-      "Buku Ucapan",
-      "Musik Latar",
-      "Peta Lokasi",
-      "Kalender",
-      "Countdown",
-      "Galeri Foto",
-    ],
-    excluded: ["Amplop Digital", "Love Story"],
-    popular: false,
-  },
-  {
-    id: "pkg-populer",
-    name: "Populer",
-    price: 199000,
-    icon: Sparkles,
-    desc: "Paling banyak dipilih — fitur lengkap.",
-    maxGuests: 500,
-    maxPhotos: 15,
-    maxRevisions: 3,
-    features: [
-      "RSVP",
-      "Buku Ucapan",
-      "Musik Latar",
-      "Peta Lokasi",
-      "Kalender",
-      "Countdown",
-      "Galeri Foto",
-      "Amplop Digital",
-      "Love Story",
-    ],
-    excluded: [],
-    popular: true,
-  },
-  {
-    id: "pkg-premium",
-    name: "Premium",
-    price: 399000,
-    icon: Crown,
-    desc: "Pengalaman paling premium untuk hari spesial.",
-    maxGuests: 2000,
-    maxPhotos: 30,
-    maxRevisions: 10,
-    features: [
-      "RSVP",
-      "Buku Ucapan",
-      "Musik Latar",
-      "Peta Lokasi",
-      "Kalender",
-      "Countdown",
-      "Galeri Foto",
-      "Amplop Digital",
-      "Love Story",
-    ],
-    excluded: [],
-    popular: false,
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function HargaPage() {
+export default async function HargaPage() {
+  const dbPackages = await prisma.package.findMany({
+    orderBy: { price: 'asc' }
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1510] to-[#0f0d0a]">
       {/* Header */}
@@ -99,104 +35,126 @@ export default function HargaPage() {
       {/* Pricing Cards */}
       <section className="px-6 pb-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className={`relative rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col ${
-                pkg.popular
-                  ? "border-[#D4A843]/50 bg-gradient-to-b from-[#D4A843]/5 to-transparent scale-[1.02] md:scale-105 shadow-2xl shadow-[#D4A843]/5"
-                  : "border-white/[0.06] bg-[#1a1510] hover:border-white/10"
-              }`}
-            >
-              {pkg.popular && (
-                <div className="bg-[#D4A843] text-[#1a1510] text-xs font-bold text-center py-1.5 font-[family-name:var(--font-body)]">
-                  🔥 PALING POPULER
-                </div>
-              )}
+          {dbPackages.map((pkg) => {
+            let featuresObj: any = pkg.features;
+            if (typeof featuresObj === 'string') {
+              try { featuresObj = JSON.parse(featuresObj); } catch(e) {}
+            }
 
-              <div className="p-8 flex-1 flex flex-col">
-                <pkg.icon
-                  className={`w-8 h-8 mb-4 ${
-                    pkg.popular ? "text-[#D4A843]" : "text-white/30"
-                  }`}
-                />
+            const activeFeatures = featuresObj?.included || [];
+            const inactiveFeatures = featuresObj?.excluded || [];
+            
+            // Icon logic based on name
+            const isPopular = pkg.name.toLowerCase().includes('populer');
+            const Icon = pkg.name.toLowerCase().includes('premium') ? Crown : isPopular ? Sparkles : Star;
 
-                <h3 className="text-xl font-semibold text-white font-[family-name:var(--font-display)]">
-                  {pkg.name}
-                </h3>
-                <p className="text-sm text-white/40 mt-1 font-[family-name:var(--font-body)]">
-                  {pkg.desc}
-                </p>
+            return (
+              <div
+                key={pkg.id}
+                className={`relative rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col ${
+                  isPopular
+                    ? "border-[#D4A843]/50 bg-gradient-to-b from-[#D4A843]/5 to-transparent scale-[1.02] md:scale-105 shadow-2xl shadow-[#D4A843]/5"
+                    : "border-white/[0.06] bg-[#1a1510] hover:border-white/10"
+                }`}
+              >
+                {isPopular && (
+                  <div className="bg-[#D4A843] text-[#1a1510] text-xs font-bold text-center py-1.5 font-[family-name:var(--font-body)]">
+                    🔥 PALING POPULER
+                  </div>
+                )}
 
-                <div className="mt-6">
-                  <span className="text-4xl font-bold text-white font-[family-name:var(--font-display)]">
-                    Rp {pkg.price.toLocaleString("id-ID")}
-                  </span>
-                  <span className="text-sm text-white/30 font-[family-name:var(--font-body)]">
-                    {" "}
-                    / undangan
-                  </span>
-                </div>
+                <div className="p-8 flex-1 flex flex-col">
+                  <Icon
+                    className={`w-8 h-8 mb-4 ${
+                      isPopular ? "text-[#D4A843]" : "text-white/30"
+                    }`}
+                  />
 
-                {/* Specs */}
-                <div className="mt-6 space-y-2 text-sm">
-                  <div className="flex justify-between text-white/50 font-[family-name:var(--font-body)]">
-                    <span>Maks. Tamu</span>
-                    <span className="text-white font-medium">
-                      {pkg.maxGuests.toLocaleString()}
+                  <h3 className="text-xl font-semibold text-white font-[family-name:var(--font-display)]">
+                    {pkg.name}
+                  </h3>
+                  <p className="text-sm text-white/40 mt-1 font-[family-name:var(--font-body)]">
+                    {featuresObj?.desc || "Cocok untuk hari spesial Anda."}
+                  </p>
+
+                  <div className="mt-6">
+                    <span className="text-4xl font-bold text-white font-[family-name:var(--font-display)]">
+                      Rp {pkg.price.toLocaleString("id-ID")}
+                    </span>
+                    <span className="text-sm text-white/30 font-[family-name:var(--font-body)]">
+                      {" "}
+                      / undangan
                     </span>
                   </div>
-                  <div className="flex justify-between text-white/50 font-[family-name:var(--font-body)]">
-                    <span>Maks. Foto</span>
-                    <span className="text-white font-medium">
-                      {pkg.maxPhotos}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-white/50 font-[family-name:var(--font-body)]">
-                    <span>Revisi</span>
-                    <span className="text-white font-medium">
-                      {pkg.maxRevisions}x
-                    </span>
-                  </div>
-                </div>
 
-                {/* Features */}
-                <div className="mt-6 pt-6 border-t border-white/[0.06] space-y-2.5 flex-1">
-                  {pkg.features.map((f) => (
-                    <div
-                      key={f}
-                      className="flex items-center gap-2 text-sm text-white/60 font-[family-name:var(--font-body)]"
-                    >
-                      <Check className="w-4 h-4 text-[#D4A843] shrink-0" />
-                      {f}
+                  {/* Specs */}
+                  <div className="mt-6 space-y-2 text-sm">
+                    <div className="flex justify-between text-white/50 font-[family-name:var(--font-body)]">
+                      <span>Maks. Tamu</span>
+                      <span className="text-white font-medium">
+                        {pkg.maxGuests.toLocaleString()}
+                      </span>
                     </div>
-                  ))}
-                  {pkg.excluded.map((f) => (
-                    <div
-                      key={f}
-                      className="flex items-center gap-2 text-sm text-white/20 line-through font-[family-name:var(--font-body)]"
-                    >
-                      <Check className="w-4 h-4 text-white/10 shrink-0" />
-                      {f}
+                    <div className="flex justify-between text-white/50 font-[family-name:var(--font-body)]">
+                      <span>Maks. Foto</span>
+                      <span className="text-white font-medium">
+                        {pkg.maxPhotos}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex justify-between text-white/50 font-[family-name:var(--font-body)]">
+                      <span>Revisi</span>
+                      <span className="text-white font-medium">
+                        {pkg.maxRevisions}x
+                      </span>
+                    </div>
+                  </div>
 
-                {/* CTA */}
-                <Link
-                  href={`/book?package=${pkg.id}`}
-                  className={`mt-8 block text-center py-3.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 font-[family-name:var(--font-body)] ${
-                    pkg.popular
-                      ? "bg-[#D4A843] text-[#1a1510] hover:bg-[#FFD966]"
-                      : "bg-white/5 text-white/70 border border-white/10 hover:border-[#D4A843]/30 hover:text-[#D4A843]"
-                  }`}
-                >
-                  Pilih {pkg.name}
-                </Link>
+                  {/* Features List */}
+                  <div className="mt-6 pt-6 border-t border-white/[0.06] space-y-2.5 flex-1">
+                    {activeFeatures.map((f: string, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 text-sm text-white/60 font-[family-name:var(--font-body)]"
+                      >
+                        <Check className="w-4 h-4 text-[#D4A843] shrink-0" />
+                        {f}
+                      </div>
+                    ))}
+                    {inactiveFeatures.map((f: string, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 text-sm text-white/20 line-through font-[family-name:var(--font-body)]"
+                      >
+                        <Check className="w-4 h-4 text-white/10 shrink-0" />
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <Link
+                    href={`/book?package=${pkg.id}`}
+                    className={`mt-8 block text-center py-3.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 font-[family-name:var(--font-body)] ${
+                      isPopular
+                        ? "bg-[#D4A843] text-[#1a1510] hover:bg-[#FFD966]"
+                        : "bg-white/5 text-white/70 border border-white/10 hover:border-[#D4A843]/30 hover:text-[#D4A843]"
+                    }`}
+                  >
+                    Pilih {pkg.name}
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {dbPackages.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-white/30 font-[family-name:var(--font-body)]">
+              Paket sedang disiapkan.
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );

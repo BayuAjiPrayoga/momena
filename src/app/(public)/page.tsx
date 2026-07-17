@@ -9,6 +9,7 @@ import {
   Clock,
 } from "lucide-react";
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Momena Labs — Platform Undangan Digital Self-Service",
@@ -16,25 +17,7 @@ export const metadata: Metadata = {
     "Buat undangan digital pernikahan, khitanan, aqiqah & acara lainnya dalam hitungan menit. Pilih tema, isi data, bayar, langsung jadi.",
 };
 
-/* ─── Placeholder data (akan diganti Prisma query saat DB aktif) ─── */
-const featuredThemes = [
-  {
-    slug: "lux-art-1",
-    name: "Lux Art 1",
-    style: "Lux Art",
-    price: 150000,
-    color: "from-[#D4A843]/20 to-[#8C6D1F]/10",
-    accent: "#D4A843",
-  },
-  {
-    slug: "rustik-1",
-    name: "Rustik 1",
-    style: "Rustik",
-    price: 150000,
-    color: "from-[#6B8F6B]/20 to-[#445844]/10",
-    accent: "#6B8F6B",
-  },
-];
+export const dynamic = "force-dynamic";
 
 const benefits = [
   {
@@ -59,7 +42,20 @@ const benefits = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredThemes = await prisma.theme.findMany({
+    where: { isBestSeller: true, isActive: true },
+    take: 2,
+    orderBy: { createdAt: "desc" },
+    include: { category: true }
+  });
+
+  const cheapestPackage = await prisma.package.findFirst({
+    orderBy: { price: "asc" }
+  });
+  
+  const startingPrice = cheapestPackage?.price || 99000;
+
   return (
     <div className="min-h-screen">
       {/* ─── Hero Section ─── */}
@@ -155,23 +151,30 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {featuredThemes.map((theme) => (
+            {featuredThemes.length > 0 ? featuredThemes.map((theme) => {
+              const accent = theme.styleGroup.toLowerCase().includes('dark') ? '#cda434' : theme.styleGroup.toLowerCase().includes('rustik') ? '#6B8F6B' : '#D4A843';
+              const bgGradient = theme.styleGroup.toLowerCase().includes('dark') ? 'from-[#0a0a0a] to-[#1a1510]' : theme.styleGroup.toLowerCase().includes('rustik') ? 'from-[#6B8F6B]/20 to-[#445844]/10' : 'from-[#D4A843]/20 to-[#8C6D1F]/10';
+
+              return (
               <Link
                 key={theme.slug}
                 href={`/themes-preview/${theme.slug}?to=Nama+Tamu`}
                 className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-[#D4A843]/30 transition-all duration-300"
               >
                 <div
-                  className={`aspect-[4/3] bg-gradient-to-br ${theme.color} flex items-center justify-center`}
+                  className={`aspect-[4/3] bg-gradient-to-br ${bgGradient} relative flex items-center justify-center overflow-hidden`}
                 >
-                  <div className="text-center space-y-3">
+                  {theme.thumbnailUrl && (
+                    <img src={theme.thumbnailUrl} alt={theme.name} className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50" />
+                  )}
+                  <div className="text-center space-y-3 relative z-10">
                     <Heart
                       className="w-12 h-12 mx-auto opacity-30 group-hover:scale-110 transition-transform"
-                      style={{ color: theme.accent }}
+                      style={{ color: accent }}
                     />
                     <p
                       className="text-3xl font-[family-name:var(--font-script)]"
-                      style={{ color: theme.accent }}
+                      style={{ color: accent }}
                     >
                       Ahmad & Fatimah
                     </p>
@@ -184,7 +187,7 @@ export default function HomePage() {
                         {theme.name}
                       </h3>
                       <p className="text-xs text-white/40 font-[family-name:var(--font-body)]">
-                        Gaya: {theme.style}
+                        Gaya: {theme.styleGroup}
                       </p>
                     </div>
                     <span className="text-xs px-3 py-1 bg-[#D4A843]/10 text-[#D4A843] rounded-full font-[family-name:var(--font-body)]">
@@ -193,7 +196,11 @@ export default function HomePage() {
                   </div>
                 </div>
               </Link>
-            ))}
+            )}) : (
+              <div className="col-span-1 md:col-span-2 text-center text-white/30 italic">
+                Belum ada tema pilihan saat ini.
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-10">
@@ -251,7 +258,7 @@ export default function HomePage() {
           </h2>
           <p className="text-white/40 font-[family-name:var(--font-body)]">
             Mulai dari{" "}
-            <span className="text-[#D4A843] font-semibold">Rp 99.000</span>{" "}
+            <span className="text-[#D4A843] font-semibold">Rp {startingPrice.toLocaleString("id-ID")}</span>{" "}
             saja. Aktif 365 hari penuh.
           </p>
           <Link
