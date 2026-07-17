@@ -62,6 +62,17 @@ async function main() {
       basePrice: 250000,
       isBestSeller: true,
       isActive: true
+    },
+    {
+      name: 'Adat Sunda',
+      slug: 'sunda',
+      categoryId: category.id,
+      styleGroup: 'Tradisional',
+      componentKey: 'sunda',
+      thumbnailUrl: '/images/themes/sunda-thumb.png',
+      basePrice: 200000,
+      isBestSeller: true,
+      isActive: true
     }
   ];
 

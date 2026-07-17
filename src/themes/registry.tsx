@@ -25,6 +25,9 @@ const themeRegistry: Record<string, ThemeComponent> = {
   "elegant-dark": dynamic(() => import("@/themes/wedding/elegant-dark"), {
     loading: () => <ThemeLoadingSkeleton />,
   }),
+  "sunda": dynamic(() => import("@/themes/wedding/sunda"), {
+    loading: () => <ThemeLoadingSkeleton />,
+  }),
 };
 
 export function getThemeComponent(componentKey: string): ThemeComponent | null {
