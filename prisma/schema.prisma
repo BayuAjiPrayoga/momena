@@ -157,7 +157,8 @@ model Payment {
 model Admin {
   id    String    @id @default(cuid())
   name  String
-  email String    @unique
+  email    String    @unique
+  password String
   role  AdminRole @default(PRODUCTION)
 }
 

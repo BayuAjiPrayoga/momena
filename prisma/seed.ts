@@ -61,7 +61,22 @@ async function main() {
 
   console.log('✅ Themes created');
 
-  // ─── Packages ───
+  // ─── Admin ───
+  const { hash } = await import('bcryptjs');
+  const adminPassword = await hash('momenalabs2026', 10);
+  
+  await prisma.admin.upsert({
+    where: { email: 'admin@momena.id' },
+    update: {
+      password: adminPassword,
+    },
+    create: {
+      name: 'Super Admin',
+      email: 'admin@momena.id',
+      password: adminPassword,
+      role: 'SUPER_ADMIN',
+    }
+  });
   await prisma.package.upsert({
     where: { id: 'pkg-starter' },
     update: {},
