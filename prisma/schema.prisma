@@ -1,0 +1,168 @@
+// Momena Labs — Database Schema
+// Ref: docs/02_ARSITEKTUR_DEVOPS.md §3
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ─── Event Categories ───────────────────────────────────────
+
+model EventCategory {
+  id        String   @id @default(cuid())
+  name      String   // "Wedding", "Khitanan", "Aqiqah", "Ulang Tahun"
+  slug      String   @unique
+  icon      String?
+  themes    Theme[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+// ─── Themes ─────────────────────────────────────────────────
+
+model Theme {
+  id              String        @id @default(cuid())
+  name            String        // "Lux Art 1", "Rustik 1"
+  slug            String        @unique
+  categoryId      String
+  category        EventCategory @relation(fields: [categoryId], references: [id])
+  styleGroup      String        // "Lux Art" | "Rustik" | "Elegant" ...
+  componentKey    String        // key React component, mis. "lux-art-1"
+  thumbnailUrl    String
+  basePrice       Int           // harga dasar dalam rupiah
+  isActive        Boolean       @default(true)
+  isBestSeller    Boolean       @default(false)
+  hasPhotoVariant Boolean       @default(true) // ada versi "tanpa foto"
+  createdAt       DateTime      @default(now())
+  orders          Order[]
+}
+
+// ─── Packages ───────────────────────────────────────────────
+
+model Package {
+  id           String  @id @default(cuid())
+  name         String  // "Starter", "Populer", "Premium"
+  price        Int
+  maxGuests    Int
+  maxPhotos    Int
+  maxRevisions Int
+  features     Json    // list fitur: rsvp, music, gift, maps, calendar, ...
+  activeDays   Int     @default(365)
+  orders       Order[]
+}
+
+// ─── Customers ──────────────────────────────────────────────
+
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  phone      String
+  authUserId String   @unique // link ke Supabase auth.users
+  orders     Order[]
+  createdAt  DateTime @default(now())
+}
+
+// ─── Orders ─────────────────────────────────────────────────
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  categoryId  String
+  category    EventCategory @relation(fields: [categoryId], references: [id])
+  themeId     String
+  theme       Theme       @relation(fields: [themeId], references: [id])
+  packageId   String
+  package     Package     @relation(fields: [packageId], references: [id])
+  status      OrderStatus @default(NEW)
+  eventData   Json        // nama mempelai/anak, tanggal, lokasi, cerita (fleksibel per kategori)
+  mediaAssets Json        // urls foto/galeri/musik
+  giftInfo    Json?       // rekening/QRIS
+  slug        String      @unique // subdomain: {slug}.momena.id
+  activeUntil DateTime?
+  guests      Guest[]
+  payments    Payment[]
+  guestbook   GuestbookMessage[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  NEW
+  PENDING_PAYMENT
+  PAYMENT_REVIEW      // untuk transfer manual
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+  CANCELLED
+}
+
+// ─── Guests ─────────────────────────────────────────────────
+
+model Guest {
+  id             String     @id @default(cuid())
+  orderId        String
+  order          Order      @relation(fields: [orderId], references: [id])
+  name           String
+  phone          String?
+  guestSlug      String     // untuk URL personalisasi: /u/{order.slug}/{guestSlug}
+  rsvpStatus     RsvpStatus @default(PENDING)
+  rsvpGuestCount Int?
+  respondedAt    DateTime?
+
+  @@unique([orderId, guestSlug])
+}
+
+enum RsvpStatus {
+  PENDING
+  ATTENDING
+  NOT_ATTENDING
+  MAYBE
+}
+
+// ─── Guestbook Messages ─────────────────────────────────────
+
+model GuestbookMessage {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  name      String
+  message   String
+  isHidden  Boolean  @default(false) // moderasi admin
+  createdAt DateTime @default(now())
+}
+
+// ─── Payments ───────────────────────────────────────────────
+
+model Payment {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  method     String   // "midtrans_va", "qris", "manual_transfer"
+  amount     Int
+  status     String   // "pending", "success", "failed"
+  proofUrl   String?  // bukti transfer manual
+  gatewayRef String?  // transaction id Midtrans
+  verifiedBy String?  // adminId jika manual
+  createdAt  DateTime @default(now())
+}
+
+// ─── Admins ─────────────────────────────────────────────────
+
+model Admin {
+  id    String    @id @default(cuid())
+  name  String
+  email String    @unique
+  role  AdminRole @default(PRODUCTION)
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  PRODUCTION
+  SUPPORT
+}
