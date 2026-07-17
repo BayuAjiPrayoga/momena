@@ -65,6 +65,8 @@ export function mapOrderToInvitationData(order: any, guestName?: string): Invita
     },
     gallery: evt.gallery || [],
     coverPhoto: "/images/themes/lux-art-1-thumb.jpg",
+    musicUrl: evt.musicUrl,
+    giftInfo: evt.giftInfo || { bankAccounts: [] },
     features: order.package?.features || {
       rsvp: true,
       guestbook: true,
