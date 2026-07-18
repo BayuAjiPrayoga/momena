@@ -8,6 +8,7 @@ import { Play, Pause, MapPin, Calendar, Gift, Heart } from "lucide-react";
 export default function SundaTheme({ data, guestName }: ThemeProps & { guestName?: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [isOpened, setIsOpened] = useState(false);
 
   useEffect(() => {
     if (data.musicUrl) {
@@ -33,6 +34,14 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
     setIsPlaying(!isPlaying);
   };
 
+  const handleOpen = () => {
+    setIsOpened(true);
+    if (audio && !isPlaying) {
+      audio.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8f5f0] text-[#54463a] font-sans overflow-x-hidden selection:bg-[#978864] selection:text-white relative">
       
@@ -48,7 +57,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
       />
 
       {/* Audio Control */}
-      {data.features?.music && data.musicUrl && (
+      {data.features?.music && data.musicUrl && isOpened && (
         <button 
           onClick={toggleAudio}
           className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-[#3e342a] text-[#f7f4ed] rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
@@ -61,9 +70,9 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
       <div className="relative z-10 flex flex-col items-center">
         
         {/* Hero / Cover Section */}
-        <section className="min-h-[100svh] w-full max-w-lg mx-auto flex flex-col items-center justify-center p-6 text-center pt-32">
+        <section className={`min-h-[100svh] w-full max-w-lg mx-auto flex flex-col items-center justify-center p-6 text-center transition-all duration-1000 ${isOpened ? 'pt-20 opacity-0 pointer-events-none absolute' : 'pt-32 opacity-100'}`}>
           
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+          <div className="space-y-4 animate-in fade-in zoom-in-95 duration-1000">
             <p className="text-[#866d4b] uppercase tracking-[0.2em] text-xs font-semibold">Pernikahan Tradisional</p>
             <h1 className="text-5xl md:text-6xl font-normal mt-2 mb-4 font-[family-name:var(--font-script)] text-[#54463a]">
               {data.couple.person1.name} <br/> <span className="text-[#866d4b] text-4xl">&</span> <br/> {data.couple.person2.name}
@@ -72,10 +81,27 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
             <div className="mt-16 pt-10 border-t border-[#866d4b]/30 space-y-3">
               <p className="text-xs text-[#54463a] uppercase tracking-widest">Kepada Yth. Bapak/Ibu/Saudara/i</p>
               <h2 className="text-xl font-bold text-[#866d4b] font-[family-name:var(--font-display)]">{guestName || data.guest.name}</h2>
-              <p className="text-[#54463a]/70 text-xs italic mt-2">Mohon maaf bila ada kesalahan penulisan nama/gelar.</p>
             </div>
+
+            <button 
+              onClick={handleOpen}
+              className="mt-10 px-8 py-3 bg-[#3e342a] text-[#f8f5f0] font-semibold text-sm uppercase tracking-widest rounded-full hover:bg-[#866d4b] transition-colors shadow-xl mx-auto flex items-center gap-2 animate-bounce"
+            >
+              Buka Undangan
+            </button>
           </div>
         </section>
+
+        {/* Inner Content (Visible after opened) */}
+        <div className={`w-full flex flex-col items-center transition-all duration-1000 transform ${isOpened ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible h-0 overflow-hidden'}`}>
+          
+          {/* Cover/Title for Opened State */}
+          <section className="w-full py-20 px-6 max-w-lg mx-auto text-center">
+            <p className="text-[#866d4b] uppercase tracking-[0.2em] text-xs font-semibold">The Wedding Of</p>
+            <h1 className="text-5xl font-normal mt-2 mb-4 font-[family-name:var(--font-script)] text-[#54463a]">
+              {data.couple.person1.name} & {data.couple.person2.name}
+            </h1>
+          </section>
 
         {/* The Bride & The Groom Section */}
         <section className="w-full py-20 px-6 max-w-lg mx-auto text-center">
@@ -207,6 +233,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
           <p className="opacity-50">Made with ♥️ by Momena Labs</p>
         </footer>
 
+        </div>
       </div>
     </div>
   );
