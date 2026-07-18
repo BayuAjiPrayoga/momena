@@ -3,13 +3,79 @@
 import { useEffect, useState, useRef } from "react";
 import type { ThemeProps } from "@/lib/types";
 import Image from "next/image";
-import { Play, Pause, MapPin, Calendar, Gift, Heart, ArrowDown } from "lucide-react";
+import { Play, Pause, MapPin, Calendar, Gift, Heart, ArrowDown, Check, Send } from "lucide-react";
 
 export default function SundaTheme({ data, guestName }: ThemeProps & { guestName?: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [isOpened, setIsOpened] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // RSVP State
+  const [rsvpStatus, setRsvpStatus] = useState("");
+  const [rsvpGuestCount, setRsvpGuestCount] = useState(1);
+  const [isRsvpSubmitting, setIsRsvpSubmitting] = useState(false);
+  const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
+
+  // Guestbook State
+  const [gbName, setGbName] = useState(data.guest.name || "");
+  const [gbMessage, setGbMessage] = useState("");
+  const [isGbSubmitting, setIsGbSubmitting] = useState(false);
+  const [gbMessages, setGbMessages] = useState(data.guestbookMessages || []);
+
+  const handleRsvpSubmit = async () => {
+    if (!rsvpStatus) return;
+    setIsRsvpSubmitting(true);
+    try {
+      if (data.rsvpEndpoint) {
+        await fetch(data.rsvpEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.guest.name,
+            status: rsvpStatus,
+            guestCount: rsvpGuestCount
+          })
+        });
+      }
+      setRsvpSubmitted(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsRsvpSubmitting(false);
+    }
+  };
+
+  const handleGuestbookSubmit = async () => {
+    if (!gbName || !gbMessage) return;
+    setIsGbSubmitting(true);
+    try {
+      const newMsg = {
+        id: Date.now().toString(),
+        name: gbName,
+        message: gbMessage,
+        createdAt: new Date().toISOString()
+      };
+      
+      if (data.guestbookEndpoint) {
+        await fetch(data.guestbookEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: gbName,
+            message: gbMessage
+          })
+        });
+      }
+
+      setGbMessages([newMsg, ...gbMessages]);
+      setGbMessage("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGbSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (data.musicUrl) {
@@ -84,15 +150,16 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
         <div className="w-full lg:w-[430px] md:max-w-[430px] mx-auto lg:mx-0 bg-white min-h-screen relative shadow-2xl overflow-hidden z-10">
         
         {/* Floral Background - Fixed behind content */}
-        <div 
-          className="absolute inset-0 z-0 pointer-events-none opacity-50"
-          style={{
-            backgroundImage: "url('/images/themes/sunda-floral-bg.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "top center",
-            backgroundAttachment: "fixed" // keep fixed so it doesn't scroll
-          }}
-        />
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-50 overflow-hidden">
+          <div 
+            className="sticky top-0 w-full h-[100svh]"
+            style={{
+              backgroundImage: "url('/images/themes/sunda-floral-bg.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "top center"
+            }}
+          />
+        </div>
 
         <div className="relative z-10">
 
@@ -289,17 +356,96 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                 <Image src={data.coverPhoto || "/images/themes/sunda-thumb.png"} alt="Couple" fill className="object-cover" />
               </div>
 
-              {/* RSVP Section Placeholder (Static for visual, logic usually handled by wrapper) */}
-              <section className="text-center mb-16">
-                <h2 className="text-3xl font-[family-name:var(--font-script)] mb-6">RSVP & Ucapan</h2>
-                <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 text-left space-y-4">
-                   <p className="text-xs text-center italic mb-4 opacity-80">Fitur Buku Tamu & RSVP</p>
-                   {/* Form visual placeholder to match design */}
-                   <input type="text" placeholder="Nama Anda" className="w-full px-4 py-3 bg-white text-[#54463a] rounded-lg text-xs" />
-                   <textarea placeholder="Tulis ucapan..." className="w-full px-4 py-3 bg-white text-[#54463a] rounded-lg text-xs h-24" />
-                   <button className="w-full py-3 bg-[#54463a] text-white rounded-lg text-xs font-bold uppercase tracking-widest">Kirim Ucapan</button>
-                </div>
-              </section>
+              {/* RSVP Section */}
+              {data.features?.rsvp && (
+                <section className="text-center mb-16">
+                  <h2 className="text-3xl font-[family-name:var(--font-script)] mb-6">RSVP</h2>
+                  <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 text-left space-y-5">
+                    {rsvpSubmitted ? (
+                      <div className="text-center py-4">
+                        <Check className="w-12 h-12 text-white/80 mx-auto mb-3" />
+                        <p className="text-sm font-bold tracking-widest uppercase">Terima Kasih</p>
+                        <p className="text-xs mt-2 opacity-80">Konfirmasi kehadiran Anda telah kami terima.</p>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-xs text-center italic opacity-80 mb-2">Konfirmasi kehadiran Anda</p>
+                        <div className="grid grid-cols-1 gap-3">
+                          {["Hadir", "Tidak Hadir", "Mungkin"].map((opt) => (
+                            <button 
+                              key={opt} 
+                              onClick={() => setRsvpStatus(opt)} 
+                              className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${rsvpStatus === opt ? "bg-white text-[#9c7b4a] border-white shadow-lg" : "bg-transparent text-white border-white/30 hover:bg-white/10"}`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                        {rsvpStatus === "Hadir" && (
+                          <div className="flex items-center justify-between bg-black/20 p-4 rounded-xl">
+                            <span className="text-xs font-bold uppercase tracking-widest">Jumlah Tamu</span>
+                            <div className="flex items-center gap-4">
+                              <button onClick={() => setRsvpGuestCount(Math.max(1, rsvpGuestCount - 1))} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center font-bold">-</button>
+                              <span className="text-sm font-bold w-4 text-center">{rsvpGuestCount}</span>
+                              <button onClick={() => setRsvpGuestCount(Math.min(5, rsvpGuestCount + 1))} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center font-bold">+</button>
+                            </div>
+                          </div>
+                        )}
+                        <button 
+                          onClick={handleRsvpSubmit} 
+                          disabled={!rsvpStatus || isRsvpSubmitting} 
+                          className="w-full py-4 mt-2 bg-[#54463a] text-white rounded-xl text-xs font-bold uppercase tracking-widest disabled:opacity-50 hover:bg-[#3d332a] transition-colors"
+                        >
+                          {isRsvpSubmitting ? "Mengirim..." : "Kirim Konfirmasi"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Guestbook Section */}
+              {data.features?.guestbook && (
+                <section className="text-center mb-16">
+                  <h2 className="text-3xl font-[family-name:var(--font-script)] mb-6">Buku Tamu</h2>
+                  <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 text-left space-y-4">
+                     <p className="text-xs text-center italic mb-4 opacity-80">Tinggalkan pesan & doa restu</p>
+                     <input 
+                        type="text" 
+                        value={gbName}
+                        onChange={(e) => setGbName(e.target.value)}
+                        placeholder="Nama Anda" 
+                        className="w-full px-4 py-3 bg-white/90 text-[#54463a] rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#54463a]" 
+                     />
+                     <textarea 
+                        value={gbMessage}
+                        onChange={(e) => setGbMessage(e.target.value)}
+                        placeholder="Tulis ucapan..." 
+                        className="w-full px-4 py-3 bg-white/90 text-[#54463a] rounded-lg text-xs h-24 resize-none outline-none focus:ring-2 focus:ring-[#54463a]" 
+                     />
+                     <button 
+                        onClick={handleGuestbookSubmit}
+                        disabled={!gbName || !gbMessage || isGbSubmitting}
+                        className="w-full py-3 bg-[#54463a] text-white rounded-lg text-xs font-bold uppercase tracking-widest disabled:opacity-50 hover:bg-[#3d332a] transition-colors flex items-center justify-center gap-2"
+                     >
+                        <Send className="w-4 h-4" />
+                        {isGbSubmitting ? "Mengirim..." : "Kirim Ucapan"}
+                     </button>
+                  </div>
+                  
+                  {gbMessages.length > 0 && (
+                    <div className="mt-8 space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar text-left">
+                      {gbMessages.map((msg) => (
+                        <div key={msg.id} className="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
+                          <p className="text-sm font-bold text-white mb-1">{msg.name}</p>
+                          <p className="text-xs text-white/90 leading-relaxed italic">"{msg.message}"</p>
+                          <p className="text-[10px] text-white/50 mt-3">{new Date(msg.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
 
               {/* Gallery */}
               {data.features?.gallery && data.gallery.length > 0 && (
