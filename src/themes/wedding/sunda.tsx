@@ -55,8 +55,33 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
         </button>
       )}
 
-      {/* Main Container - Centered Mobile Layout for Desktop */}
-      <div className="w-full md:max-w-[430px] mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden">
+      {/* Outer Wrapper */}
+      <div className="w-full min-h-screen lg:flex lg:justify-end">
+        
+        {/* Left Side (Desktop Only) - Fixed Photo */}
+        <div className="hidden lg:flex lg:w-[calc(100%-430px)] fixed left-0 top-0 bottom-0 flex-col justify-end items-center text-center pb-24 z-0">
+          <Image 
+            src={data.coverPhoto || "/images/themes/sunda-thumb.png"} 
+            alt="Cover" 
+            fill 
+            className="object-cover" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 z-10" />
+          <div className="relative z-20 text-white space-y-3">
+            <p className="text-xs uppercase tracking-[0.3em] font-medium opacity-80">The Wedding of</p>
+            <h1 className="text-6xl font-[family-name:var(--font-display)] drop-shadow-lg">
+              {data.couple.person1.name} & {data.couple.person2.name}
+            </h1>
+            {data.events[0] && (
+              <p className="text-sm font-medium tracking-widest opacity-80">
+                {data.events[0].date}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side / Main Mobile Content */}
+        <div className="w-full lg:w-[430px] md:max-w-[430px] mx-auto lg:mx-0 bg-white min-h-screen relative shadow-2xl overflow-hidden z-10">
         
         {/* Floral Background - Fixed behind content */}
         <div 
@@ -181,9 +206,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                   <h3 className="text-3xl font-[family-name:var(--font-script)] text-[#9c7b4a]">{data.couple.person2.name}</h3>
                   <p className="text-xs font-bold text-[#54463a]">{data.couple.person2.fullName}</p>
                   <p className="text-[10px] text-[#54463a]/70 whitespace-pre-wrap leading-relaxed">{data.couple.person2.parents}</p>
-                  {data.features?.instagram && (
-                    <a href="#" className="inline-block px-4 py-1.5 bg-[#9c7b4a] text-white text-[10px] rounded-full mt-2">@instagram</a>
-                  )}
+                  <a href="#" className="inline-block px-4 py-1.5 bg-[#9c7b4a] text-white text-[10px] rounded-full mt-2">@instagram</a>
                 </div>
 
                 <div className="flex items-center justify-center gap-4 my-8">
@@ -200,9 +223,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                   <h3 className="text-3xl font-[family-name:var(--font-script)] text-[#9c7b4a]">{data.couple.person1.name}</h3>
                   <p className="text-xs font-bold text-[#54463a]">{data.couple.person1.fullName}</p>
                   <p className="text-[10px] text-[#54463a]/70 whitespace-pre-wrap leading-relaxed">{data.couple.person1.parents}</p>
-                  {data.features?.instagram && (
-                    <a href="#" className="inline-block px-4 py-1.5 bg-[#9c7b4a] text-white text-[10px] rounded-full mt-2">@instagram</a>
-                  )}
+                  <a href="#" className="inline-block px-4 py-1.5 bg-[#9c7b4a] text-white text-[10px] rounded-full mt-2">@instagram</a>
                 </div>
 
               </div>
@@ -326,6 +347,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
 
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
