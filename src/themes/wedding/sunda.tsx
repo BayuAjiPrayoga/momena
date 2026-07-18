@@ -150,9 +150,9 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
         <div className="w-full lg:w-[430px] md:max-w-[430px] mx-auto lg:mx-0 bg-white min-h-screen relative shadow-2xl overflow-hidden z-10">
         
         {/* Floral Background - Fixed behind content */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-50 overflow-hidden">
+        <div className="fixed inset-y-0 left-0 right-0 mx-auto lg:left-auto lg:right-0 lg:mx-0 w-full lg:w-[430px] md:max-w-[430px] z-0 pointer-events-none opacity-50">
           <div 
-            className="sticky top-0 w-full h-[100svh]"
+            className="w-full h-full"
             style={{
               backgroundImage: "url('/images/themes/sunda-floral-bg.png')",
               backgroundSize: "cover",
