@@ -331,23 +331,23 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                     <div className="relative z-10 text-center flex flex-col items-center justify-center h-full pt-10 pb-6 w-full">
                       <h3 className="text-4xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-6 drop-shadow-sm">{event.name}</h3>
                       
-                      <div className="space-y-1 mb-8 bg-white/70 backdrop-blur-sm py-3 px-6 rounded-2xl w-[110%] -ml-[5%] border border-white/50">
-                         <p className="text-[11px] font-bold text-[#54463a] uppercase tracking-widest">{event.date}</p>
-                         <p className="text-[10px] font-bold text-[#54463a]">{event.time}</p>
+                      <div className="space-y-1 mb-6">
+                         <p className="text-sm font-bold text-[#1a1a1a]">{event.date}</p>
+                         <p className="text-xs text-[#333]">{event.time}</p>
                       </div>
                       
-                      <MapPin className="w-5 h-5 text-[#9c7b4a] mb-2 mx-auto" />
-                      <p className="text-[11px] font-bold text-[#54463a] uppercase mb-1 leading-snug">{event.venue}</p>
-                      <p className="text-[10px] text-[#54463a]/80 leading-relaxed mb-6">{event.address}</p>
+                      <MapPin className="w-7 h-7 text-[#ae8d5e] mb-3 mx-auto" fill="currentColor" />
+                      <p className="text-sm font-bold text-[#1a1a1a] mb-1 leading-snug">{event.venue}</p>
+                      <p className="text-xs text-[#333] leading-relaxed mb-6">{event.address}</p>
                       
                       {data.features?.maps && event.mapsUrl && (
                         <a 
                           href={event.mapsUrl} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="bg-[#ae8d5e] text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#836338] transition shadow-md mt-auto inline-block"
+                          className="bg-[#ae8d5e] text-white px-5 py-2.5 rounded-full text-xs font-bold hover:bg-[#836338] transition shadow-md mt-auto inline-flex items-center gap-2"
                         >
-                          Google Maps
+                          <MapPin className="w-4 h-4" fill="currentColor" /> Google Maps
                         </a>
                       )}
                     </div>
