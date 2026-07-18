@@ -43,6 +43,7 @@ export interface GiftInfo {
   bankAccounts: BankAccount[];
   qrisUrl?: string;
   ewalletUrl?: string;
+  shippingAddress?: string;
 }
 
 export interface GuestInfo {
@@ -67,6 +68,7 @@ export interface FeatureFlags {
   countdown: boolean;
   gallery: boolean;
   loveStory: boolean;
+  streaming: boolean;
 }
 
 export interface InvitationData {
@@ -90,6 +92,7 @@ export interface InvitationData {
   gallery: GalleryItem[];
   coverPhoto: string;
   musicUrl?: string;
+  streamingUrl?: string;
 
   // Story/narrative
   loveStory?: LoveStoryItem[];

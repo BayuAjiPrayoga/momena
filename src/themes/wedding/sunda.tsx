@@ -318,48 +318,136 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
               </div>
             </section>
 
-            {/* ─── Events (Oval Cards) ─── */}
-            <section className="w-full px-5 py-6 space-y-6">
-              {data.events.map((event, idx) => (
-                <div key={idx} className="bg-[#fcfaf7]/95 backdrop-blur-sm rounded-[100px] border-4 border-[#9c7b4a]/20 p-8 py-12 text-center shadow-md relative">
-                  <h2 className="text-2xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-4">{event.name}</h2>
+            {/* ─── Events & Love Story Section (Brown Background) ─── */}
+            <div className="w-full bg-[#ae8d5e] mt-6 pt-16 pb-16 px-5 relative z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+              
+              {/* Events */}
+              <section className="space-y-8 mb-16">
+                {data.events.map((event, idx) => (
+                  <div key={idx} className="relative bg-[#fcfaf7] w-full max-w-[300px] mx-auto rounded-[150px] aspect-[1/1.6] flex flex-col items-center justify-center p-8 overflow-hidden shadow-xl border-4 border-[#fcfaf7]">
+                    {/* The floral background clipped inside the oval */}
+                    <div className="absolute inset-0 opacity-40 bg-[url('/images/themes/sunda-floral-bg.png')] bg-cover bg-bottom mix-blend-multiply pointer-events-none" />
+                    
+                    <div className="relative z-10 text-center flex flex-col items-center justify-center h-full pt-10 pb-6 w-full">
+                      <h3 className="text-4xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-6 drop-shadow-sm">{event.name}</h3>
+                      
+                      <div className="space-y-1 mb-8 bg-white/70 backdrop-blur-sm py-3 px-6 rounded-2xl w-[110%] -ml-[5%] border border-white/50">
+                         <p className="text-[11px] font-bold text-[#54463a] uppercase tracking-widest">{event.date}</p>
+                         <p className="text-[10px] font-bold text-[#54463a]">{event.time}</p>
+                      </div>
+                      
+                      <MapPin className="w-5 h-5 text-[#9c7b4a] mb-2 mx-auto" />
+                      <p className="text-[11px] font-bold text-[#54463a] uppercase mb-1 leading-snug">{event.venue}</p>
+                      <p className="text-[10px] text-[#54463a]/80 leading-relaxed mb-6">{event.address}</p>
+                      
+                      {data.features?.maps && event.mapsUrl && (
+                        <a 
+                          href={event.mapsUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="bg-[#ae8d5e] text-white px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#836338] transition shadow-md mt-auto inline-block"
+                        >
+                          Google Maps
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </section>
+
+              {/* Love Story */}
+              {data.features?.loveStory && data.loveStory && data.loveStory.length > 0 && (
+                <section className="text-white mt-16 mb-8">
+                  <h2 className="text-5xl font-[family-name:var(--font-script)] text-center mb-12">Love Story</h2>
+                  <div className="max-w-xs mx-auto space-y-8 relative before:absolute before:inset-0 before:ml-2 md:before:mx-auto md:before:translate-x-0 before:h-full before:w-[1px] before:bg-white/30">
+                    {data.loveStory.map((story, idx) => (
+                      <div key={idx} className="relative flex items-start justify-between md:justify-normal md:odd:flex-row-reverse group">
+                        {/* Timeline Dot */}
+                        <div className="flex items-center justify-center w-4 h-4 mt-1 rounded-full border border-[#ae8d5e] bg-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 relative" />
+                        {/* Content */}
+                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] text-left">
+                          <p className="font-bold text-sm mb-1">{new Date(story.date).getFullYear()}</p>
+                          <p className="text-[10px] leading-relaxed opacity-90">{story.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+
+            {/* Live Streaming (Transparent Background) */}
+            {data.features?.streaming && data.streamingUrl && (
+              <section className="w-full px-5 py-16 relative z-10">
+                <div className="bg-[#fcfaf7] rounded-3xl p-8 text-center shadow-xl border-4 border-[#ae8d5e]/20 relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-30 bg-[url('/images/themes/sunda-floral-bg.png')] bg-cover bg-bottom mix-blend-multiply pointer-events-none" />
                   
-                  <div className="space-y-2 mb-6">
-                    <p className="text-sm font-bold text-[#54463a] uppercase tracking-widest">{event.date}</p>
-                    <p className="text-[10px] bg-[#9c7b4a] text-white px-3 py-1 rounded-full inline-block font-medium tracking-widest">{event.time}</p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-[#54463a] uppercase">{event.venue}</p>
-                    <p className="text-[10px] text-[#54463a]/80 leading-relaxed italic px-2">{event.address}</p>
-                  </div>
-
-                  {data.features?.maps && event.mapsUrl && (
-                    <a 
-                      href={event.mapsUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="mt-6 inline-block px-6 py-2 border border-[#9c7b4a] text-[#9c7b4a] font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-[#9c7b4a] hover:text-white transition-colors"
-                    >
-                      Buka Peta
+                  <div className="relative z-10">
+                    <h2 className="text-4xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-4">Live Streaming</h2>
+                    <p className="text-[10px] text-[#54463a] leading-relaxed mb-6 px-2 font-medium">
+                      Temui kami secara virtual, untuk menyaksikan acara pernikahan kami melalui tautan di bawah ini:
+                    </p>
+                    <a href={data.streamingUrl} target="_blank" rel="noreferrer" className="bg-[#ae8d5e] text-white px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#836338] transition inline-block shadow-md">
+                      @username
                     </a>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </section>
+              </section>
+            )}
 
             {/* ─── Bottom Brown Background Section ─── */}
-            <div className="w-full bg-[#9c7b4a] mt-10 rounded-t-[60px] pt-12 pb-16 px-5 relative z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] text-white">
+            <div className="w-full bg-[#ae8d5e] rounded-t-[60px] pt-16 pb-16 px-5 relative z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] text-white">
               
               {/* Photo inside brown section */}
-              <div className="w-48 h-64 mx-auto rounded-t-full rounded-b-2xl overflow-hidden border-4 border-white/20 shadow-xl relative mb-12">
-                <Image src={data.coverPhoto || "/images/themes/sunda-thumb.png"} alt="Couple" fill className="object-cover" />
+              <div className="w-48 h-64 mx-auto rounded-t-full rounded-b-2xl overflow-hidden border-4 border-white/20 shadow-xl relative mb-16">
+                <Image src={data.coverPhoto || "/images/themes/sunda-thumb.png"} alt="Couple" fill className="object-cover object-top" />
               </div>
+
+              {/* Wedding Gift */}
+              {data.features?.gift && data.giftInfo && data.giftInfo.bankAccounts.length > 0 && (
+                <section className="text-center mb-16">
+                  <Gift className="w-10 h-10 mx-auto mb-3 opacity-90" />
+                  <h2 className="text-5xl font-[family-name:var(--font-script)] mb-4">Wedding Gift</h2>
+                  <p className="text-[10px] leading-relaxed mb-8 px-2 opacity-90 font-medium">
+                    Tanpa mengurangi rasa hormat, bagi Bapak/Ibu/Saudara/i yang ingin memberikan tanda kasih untuk kami, dapat melalui:
+                  </p>
+                  <div className="space-y-4 max-w-sm mx-auto">
+                    {data.giftInfo.bankAccounts.map((bank, idx) => (
+                      <div key={idx} className="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#54463a] p-6 rounded-xl shadow-xl relative overflow-hidden border border-white/50 text-center">
+                        <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-[#ae8d5e]/10 rounded-full blur-2xl pointer-events-none" />
+                        <div className="absolute -top-8 -left-8 w-32 h-32 bg-[#ae8d5e]/5 rounded-full blur-xl pointer-events-none" />
+                        
+                        <h3 className="text-xl font-black text-[#00529b] italic uppercase tracking-wider mb-1">{bank.bank}</h3>
+                        <p className="text-[10px] font-bold uppercase mb-1">{bank.name}</p>
+                        <p className="text-lg font-mono font-bold mb-4 tracking-widest text-[#333]">{bank.number}</p>
+                        <button 
+                           onClick={() => navigator.clipboard.writeText(bank.number)}
+                           className="bg-[#ae8d5e] text-white px-5 py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-[#836338] transition inline-flex items-center gap-2 shadow"
+                        >
+                           Salin Nomor
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {/* Alamat Kirim Kado */}
+                    <div className="bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] text-[#54463a] p-6 rounded-xl shadow-xl relative overflow-hidden border border-white/50 text-center mt-6">
+                      <p className="text-[10px] font-bold uppercase mb-2">Alamat Kirim Kado</p>
+                      <p className="text-xs font-bold leading-relaxed mb-4">{data.giftInfo?.shippingAddress || "Jalan Kembangan No 4 Jakarta"}</p>
+                      <button 
+                         onClick={() => navigator.clipboard.writeText(data.giftInfo?.shippingAddress || "Jalan Kembangan No 4 Jakarta")}
+                         className="bg-[#ae8d5e] text-white px-5 py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-[#836338] transition inline-flex items-center gap-2 shadow"
+                      >
+                         Salin Alamat
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              )}
 
               {/* RSVP Section */}
               {data.features?.rsvp && (
                 <section className="text-center mb-16">
-                  <h2 className="text-3xl font-[family-name:var(--font-script)] mb-6">RSVP</h2>
+                  <h2 className="text-4xl font-[family-name:var(--font-script)] mb-6">RSVP</h2>
                   <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 text-left space-y-5">
                     {rsvpSubmitted ? (
                       <div className="text-center py-4">
@@ -375,7 +463,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                             <button 
                               key={opt} 
                               onClick={() => setRsvpStatus(opt)} 
-                              className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${rsvpStatus === opt ? "bg-white text-[#9c7b4a] border-white shadow-lg" : "bg-transparent text-white border-white/30 hover:bg-white/10"}`}
+                              className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${rsvpStatus === opt ? "bg-white text-[#ae8d5e] border-white shadow-lg" : "bg-transparent text-white border-white/30 hover:bg-white/10"}`}
                             >
                               {opt}
                             </button>
@@ -407,7 +495,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
               {/* Guestbook Section */}
               {data.features?.guestbook && (
                 <section className="text-center mb-16">
-                  <h2 className="text-3xl font-[family-name:var(--font-script)] mb-6">Buku Tamu</h2>
+                  <h2 className="text-4xl font-[family-name:var(--font-script)] mb-6">Buku Tamu</h2>
                   <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 text-left space-y-4">
                      <p className="text-xs text-center italic mb-4 opacity-80">Tinggalkan pesan & doa restu</p>
                      <input 

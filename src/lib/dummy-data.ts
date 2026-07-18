@@ -91,6 +91,7 @@ export function getDummyInvitationData(guestName?: string): InvitationData {
         { bank: 'BNI', number: '0987654321', name: 'Fatimah Azzahra' },
       ],
       qrisUrl: '/images/placeholder/qris.png',
+      shippingAddress: 'Jalan Kembangan No 4 Jakarta'
     },
 
     features: {
@@ -103,10 +104,12 @@ export function getDummyInvitationData(guestName?: string): InvitationData {
       countdown: true,
       gallery: true,
       loveStory: true,
+      streaming: true,
     },
 
     rsvpEndpoint: '/api/orders/demo/rsvp',
     guestbookEndpoint: '/api/orders/demo/guestbook',
+    streamingUrl: 'https://youtube.com/live/your_live_streaming',
     guestbookMessages: [
       {
         id: '1',
