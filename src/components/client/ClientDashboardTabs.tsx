@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { 
   Users, MessageSquare, ExternalLink, Download, 
-  Send, Settings, Save, CheckCircle2, Copy
+  Send, Settings, Save, CheckCircle2, Copy, Camera, ImageIcon, Upload
 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import ImageCropper from "@/components/ui/ImageCropper";
+import Image from "next/image";
 
 interface ClientDashboardTabsProps {
   order: any;
@@ -336,6 +338,16 @@ function SettingsTab({ order }: { order: any }) {
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
+  // Photo upload + crop state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState("");
+  const [cropTarget, setCropTarget] = useState<"cover" | "bride" | "groom">("cover");
+  const [coverPreview, setCoverPreview] = useState("");
+  const [bridePreview, setBridePreview] = useState("");
+  const [groomPreview, setGroomPreview] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   let evt = order.eventData;
   if (typeof evt === "string") {
     try { evt = JSON.parse(evt); } catch (e) { evt = {}; }
@@ -347,15 +359,53 @@ function SettingsTab({ order }: { order: any }) {
       bankName: evt.giftInfo?.bankAccounts?.[0]?.bank || "",
       bankNumber: evt.giftInfo?.bankAccounts?.[0]?.number || "",
       bankAccountName: evt.giftInfo?.bankAccounts?.[0]?.name || "",
-      // tambahkan fields lain jika perlu
     }
   });
+
+  // Open file picker for a specific photo target
+  const handlePhotoSelect = (target: "cover" | "bride" | "groom") => {
+    setCropTarget(target);
+    fileInputRef.current?.click();
+  };
+
+  // When file is selected, open cropper
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropImageSrc(url);
+    setCropModalOpen(true);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  };
+
+  // After crop, upload the blob
+  const handleCropDone = async (blob: Blob) => {
+    setCropModalOpen(false);
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", blob, `${cropTarget}.jpg`);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (res.ok) {
+        const { url } = await res.json();
+        if (cropTarget === "cover") setCoverPreview(url);
+        else if (cropTarget === "bride") setBridePreview(url);
+        else if (cropTarget === "groom") setGroomPreview(url);
+      } else {
+        alert("Gagal mengupload foto");
+      }
+    } catch {
+      alert("Error uploading");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     setSuccessMsg("");
     try {
-      // Kita butuh Endpoint PUT /api/client/order
       const res = await fetch(`/api/client/order`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -365,6 +415,9 @@ function SettingsTab({ order }: { order: any }) {
           bankName: data.bankName,
           bankNumber: data.bankNumber,
           bankAccountName: data.bankAccountName,
+          coverPhoto: coverPreview || undefined,
+          bridePhoto: bridePreview || undefined,
+          groomPhoto: groomPreview || undefined,
         })
       });
 
@@ -380,15 +433,45 @@ function SettingsTab({ order }: { order: any }) {
     }
   };
 
+  const getCropAspect = () => {
+    if (cropTarget === "cover") return 9 / 16; // portrait cover
+    return 5 / 6; // portrait profile
+  };
+
   return (
     <div className="max-w-2xl animate-in fade-in duration-300">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Image Cropper Modal */}
+      {cropModalOpen && cropImageSrc && (
+        <ImageCropper
+          imageSrc={cropImageSrc}
+          aspectRatio={getCropAspect()}
+          cropShape={cropTarget === "cover" ? "rect" : "round"}
+          onCropComplete={handleCropDone}
+          onCancel={() => setCropModalOpen(false)}
+          label={
+            cropTarget === "cover" ? "Crop Foto Utama" :
+            cropTarget === "bride" ? "Crop Foto Mempelai Wanita" :
+            "Crop Foto Mempelai Pria"
+          }
+        />
+      )}
+
       <div className="bg-[#1a1510] border border-white/10 rounded-2xl p-6 space-y-6">
         <div>
           <h3 className="text-xl font-[family-name:var(--font-display)] flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#D4A843]" /> Pengaturan Data Acara
           </h3>
           <p className="text-sm text-white/50 mt-1 font-[family-name:var(--font-body)]">
-            Ubah backsound musik dan informasi rekening untuk amplop digital.
+            Ubah foto, backsound musik dan informasi rekening.
           </p>
         </div>
 
@@ -400,6 +483,91 @@ function SettingsTab({ order }: { order: any }) {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Photo Upload Section */}
+          <div className="space-y-4">
+            <h4 className="text-[#D4A843] text-sm font-semibold border-b border-white/10 pb-2 flex items-center gap-2">
+              <Camera className="w-4 h-4" /> Foto Pengantin
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              {/* Cover Photo */}
+              <div className="space-y-2">
+                <p className="text-xs text-white/50 text-center">Foto Utama</p>
+                <button
+                  type="button"
+                  onClick={() => handlePhotoSelect("cover")}
+                  className="w-full aspect-[9/16] rounded-xl border-2 border-dashed border-white/20 hover:border-[#D4A843]/50 bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center overflow-hidden relative group"
+                >
+                  {coverPreview ? (
+                    <>
+                      <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-6 h-6 text-white/30 mb-1" />
+                      <span className="text-[10px] text-white/30">Upload</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Bride Photo */}
+              <div className="space-y-2">
+                <p className="text-xs text-white/50 text-center">Mempelai Wanita</p>
+                <button
+                  type="button"
+                  onClick={() => handlePhotoSelect("bride")}
+                  className="w-full aspect-[5/6] rounded-xl border-2 border-dashed border-white/20 hover:border-[#D4A843]/50 bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center overflow-hidden relative group"
+                >
+                  {bridePreview ? (
+                    <>
+                      <img src={bridePreview} alt="Bride" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-6 h-6 text-white/30 mb-1" />
+                      <span className="text-[10px] text-white/30">Upload</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Groom Photo */}
+              <div className="space-y-2">
+                <p className="text-xs text-white/50 text-center">Mempelai Pria</p>
+                <button
+                  type="button"
+                  onClick={() => handlePhotoSelect("groom")}
+                  className="w-full aspect-[5/6] rounded-xl border-2 border-dashed border-white/20 hover:border-[#D4A843]/50 bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center overflow-hidden relative group"
+                >
+                  {groomPreview ? (
+                    <>
+                      <img src={groomPreview} alt="Groom" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-6 h-6 text-white/30 mb-1" />
+                      <span className="text-[10px] text-white/30">Upload</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            {uploadingPhoto && (
+              <p className="text-xs text-[#D4A843] text-center animate-pulse">Mengupload foto...</p>
+            )}
+            <p className="text-xs text-white/30 text-center">Klik untuk upload, lalu atur posisi foto sesuai keinginan.</p>
+          </div>
+
+          {/* Music URL */}
           <div className="space-y-4">
             <h4 className="text-[#D4A843] text-sm font-semibold border-b border-white/10 pb-2">Backsound Musik</h4>
             <div>
@@ -413,6 +581,7 @@ function SettingsTab({ order }: { order: any }) {
             </div>
           </div>
 
+          {/* Bank info */}
           <div className="space-y-4">
             <h4 className="text-[#D4A843] text-sm font-semibold border-b border-white/10 pb-2">Informasi Amplop Digital (Rekening)</h4>
             <div className="grid grid-cols-2 gap-4">

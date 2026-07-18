@@ -201,7 +201,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                 {/* Bride */}
                 <div className="space-y-4 mb-10">
                   <div className="w-40 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden border-4 border-white shadow-md relative">
-                    <Image src={data.couple.person2.photo || "/images/themes/sunda-thumb.png"} alt="Bride" fill className="object-cover" />
+                    <Image src={data.couple.person2.photo || "/images/themes/sunda-thumb.png"} alt="Bride" fill className="object-cover object-top" />
                   </div>
                   <h3 className="text-3xl font-[family-name:var(--font-script)] text-[#9c7b4a]">{data.couple.person2.name}</h3>
                   <p className="text-xs font-bold text-[#54463a]">{data.couple.person2.fullName}</p>
@@ -218,7 +218,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                 {/* Groom */}
                 <div className="space-y-4">
                   <div className="w-40 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden border-4 border-white shadow-md relative">
-                    <Image src={data.couple.person1.photo || "/images/themes/sunda-thumb.png"} alt="Groom" fill className="object-cover" />
+                    <Image src={data.couple.person1.photo || "/images/themes/sunda-thumb.png"} alt="Groom" fill className="object-cover object-top" />
                   </div>
                   <h3 className="text-3xl font-[family-name:var(--font-script)] text-[#9c7b4a]">{data.couple.person1.name}</h3>
                   <p className="text-xs font-bold text-[#54463a]">{data.couple.person1.fullName}</p>
