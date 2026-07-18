@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { ThemeProps } from "@/lib/types";
 import Image from "next/image";
 import { Play, Pause, MapPin, Calendar, Gift, Heart } from "lucide-react";
@@ -9,6 +9,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [isOpened, setIsOpened] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (data.musicUrl) {
@@ -40,6 +41,9 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
       audio.play().catch(() => {});
       setIsPlaying(true);
     }
+    setTimeout(() => {
+      contentRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   return (
@@ -70,7 +74,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
       <div className="relative z-10 flex flex-col items-center">
         
         {/* Hero / Cover Section */}
-        <section className={`min-h-[100svh] w-full max-w-lg mx-auto flex flex-col items-center justify-center p-6 text-center transition-all duration-1000 ${isOpened ? 'pt-20 opacity-0 pointer-events-none absolute' : 'pt-32 opacity-100'}`}>
+        <section className="min-h-[100svh] w-full max-w-lg mx-auto flex flex-col items-center justify-center p-6 text-center pt-32 relative">
           
           <div className="space-y-4 animate-in fade-in zoom-in-95 duration-1000">
             <p className="text-[#866d4b] uppercase tracking-[0.2em] text-xs font-semibold">Pernikahan Tradisional</p>
@@ -83,17 +87,20 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
               <h2 className="text-xl font-bold text-[#866d4b] font-[family-name:var(--font-display)]">{guestName || data.guest.name}</h2>
             </div>
 
-            <button 
-              onClick={handleOpen}
-              className="mt-10 px-8 py-3 bg-[#3e342a] text-[#f8f5f0] font-semibold text-sm uppercase tracking-widest rounded-full hover:bg-[#866d4b] transition-colors shadow-xl mx-auto flex items-center gap-2 animate-bounce"
-            >
-              Buka Undangan
-            </button>
+            {/* Button disappears when opened */}
+            <div className={`transition-all duration-700 ${isOpened ? 'opacity-0 scale-90 pointer-events-none h-0 overflow-hidden' : 'opacity-100 scale-100 h-20'}`}>
+              <button 
+                onClick={handleOpen}
+                className="mt-10 px-8 py-3 bg-[#3e342a] text-[#f8f5f0] font-semibold text-sm uppercase tracking-widest rounded-full hover:bg-[#866d4b] transition-colors shadow-xl mx-auto flex items-center gap-2 animate-bounce"
+              >
+                Buka Undangan
+              </button>
+            </div>
           </div>
         </section>
 
         {/* Inner Content (Visible after opened) */}
-        <div className={`w-full flex flex-col items-center transition-all duration-1000 transform ${isOpened ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible h-0 overflow-hidden'}`}>
+        <div ref={contentRef} className={`w-full flex flex-col items-center transition-all duration-1000 transform ${isOpened ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible h-0 overflow-hidden'}`}>
           
           {/* Cover/Title for Opened State */}
           <section className="w-full py-20 px-6 max-w-lg mx-auto text-center">
