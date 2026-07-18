@@ -332,11 +332,18 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                       <h3 className="text-4xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-6 drop-shadow-sm">{event.name}</h3>
                       
                       <div className="space-y-1 mb-6">
-                         <p className="text-sm font-bold text-[#1a1a1a]">{event.date}</p>
+                         <p className="text-sm font-bold text-[#1a1a1a]">
+                           {(() => {
+                             const d = new Date(event.date);
+                             return isNaN(d.getTime()) ? event.date : d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                           })()}
+                         </p>
                          <p className="text-xs text-[#333]">{event.time}</p>
                       </div>
                       
-                      <MapPin className="w-7 h-7 text-[#ae8d5e] mb-3 mx-auto" fill="currentColor" />
+                      <svg className="w-7 h-7 text-[#ae8d5e] mb-3 mx-auto" fill="currentColor" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
+                      </svg>
                       <p className="text-sm font-bold text-[#1a1a1a] mb-1 leading-snug">{event.venue}</p>
                       <p className="text-xs text-[#333] leading-relaxed mb-6">{event.address}</p>
                       
@@ -347,7 +354,9 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
                           rel="noreferrer"
                           className="bg-[#ae8d5e] text-white px-5 py-2.5 rounded-full text-xs font-bold hover:bg-[#836338] transition shadow-md mt-auto inline-flex items-center gap-2"
                         >
-                          <MapPin className="w-4 h-4" fill="currentColor" /> Google Maps
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
+                          </svg> Google Maps
                         </a>
                       )}
                     </div>
