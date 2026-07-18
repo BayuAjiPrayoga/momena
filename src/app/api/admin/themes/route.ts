@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod/v4";
 
+// GET — List all active themes (public)
+export async function GET() {
+  try {
+    const themes = await prisma.theme.findMany({
+      where: { isActive: true },
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({ themes });
+  } catch (error) {
+    console.error("[Themes API] GET Error:", error);
+    return NextResponse.json({ error: "Gagal mengambil data tema" }, { status: 500 });
+  }
+}
+
 const themeSchema = z.object({
   name: z.string().min(1, "Nama tema wajib diisi"),
   slug: z.string().min(1, "Slug wajib diisi"),
@@ -52,6 +68,38 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[Themes API] Error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+  }
+}
+
+// PUT — Update existing theme
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, ...data } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "ID tema diperlukan" }, { status: 400 });
+    }
+
+    const theme = await prisma.theme.update({
+      where: { id },
+      data: {
+        name: data.name,
+        slug: data.slug,
+        categoryId: data.categoryId,
+        styleGroup: data.styleGroup,
+        componentKey: data.componentKey,
+        thumbnailUrl: data.thumbnailUrl,
+        basePrice: data.basePrice,
+        isActive: data.isActive,
+        isBestSeller: data.isBestSeller,
+      },
+    });
+
+    return NextResponse.json({ success: true, theme });
+  } catch (error) {
+    console.error("[Themes API] Update Error:", error);
+    return NextResponse.json({ error: "Gagal memperbarui tema" }, { status: 500 });
   }
 }
 

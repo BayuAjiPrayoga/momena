@@ -55,7 +55,9 @@ export default async function AdminOrdersPage() {
                 orders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <p className="font-mono text-xs font-semibold text-gray-900">{order.orderNumber}</p>
+                      <Link href={`/admin/orders/${order.id}`} className="hover:underline">
+                        <p className="font-mono text-xs font-semibold text-blue-600">{order.orderNumber}</p>
+                      </Link>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(order.activeUntil || Date.now()).toLocaleDateString("id-ID")}
                       </p>

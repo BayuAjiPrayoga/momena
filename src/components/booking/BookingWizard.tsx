@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -18,17 +18,24 @@ import {
 } from "lucide-react";
 import type { FullBookingData } from "@/lib/validations/booking";
 
-/* ─── Static data (will be from DB later) ─── */
-const themes = [
-  { slug: "lux-art-1", name: "Lux Art 1", style: "Lux Art", accent: "#D4A843" },
-  { slug: "rustik-1", name: "Rustik 1", style: "Rustik", accent: "#6B8F6B" },
-];
+interface ThemeOption {
+  slug: string;
+  name: string;
+  styleGroup: string;
+  thumbnailUrl: string;
+  basePrice: number;
+  category: { name: string };
+}
 
-const packages = [
-  { id: "pkg-starter", name: "Starter", price: 99000, icon: Star, maxGuests: 100, maxPhotos: 5, revisions: 1 },
-  { id: "pkg-populer", name: "Populer", price: 199000, icon: Sparkles, maxGuests: 500, maxPhotos: 15, revisions: 3 },
-  { id: "pkg-premium", name: "Premium", price: 399000, icon: Crown, maxGuests: 2000, maxPhotos: 30, revisions: 10 },
-];
+interface PackageOption {
+  id: string;
+  name: string;
+  price: number;
+  maxGuests: number;
+  maxPhotos: number;
+  maxRevisions: number;
+  features: any;
+}
 
 const steps = [
   { label: "Tema", icon: Heart },
@@ -49,6 +56,11 @@ export default function BookingWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Dynamic data from DB
+  const [themes, setThemes] = useState<ThemeOption[]>([]);
+  const [packages, setPackages] = useState<PackageOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [form, setForm] = useState<FormData>({
     themeSlug: preselectedTheme,
     packageId: preselectedPackage,
@@ -58,6 +70,35 @@ export default function BookingWizard() {
     resepsiDate: "", resepsiTime: "", resepsiVenue: "", resepsiAddress: "", resepsiMapsUrl: "",
     customerName: "", customerEmail: "", customerPhone: "",
   });
+
+  // Fetch themes & packages from DB on mount
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [themesRes, packagesRes] = await Promise.all([
+          fetch("/api/admin/themes?list=true"),
+          fetch("/api/admin/packages"),
+        ]);
+
+        if (themesRes.ok) {
+          const themesData = await themesRes.json();
+          // The themes API might return { themes: [...] } or be from the katalog
+          setThemes(themesData.themes || []);
+        }
+
+        if (packagesRes.ok) {
+          const packagesData = await packagesRes.json();
+          setPackages(packagesData.packages || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch booking data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   const update = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -101,9 +142,11 @@ export default function BookingWizard() {
           onClose: () => { setIsSubmitting(false); },
         });
       } else {
-        // Fallback: redirect
+        // Fallback: redirect or demo mode
         if (data.redirectUrl) {
           window.location.href = data.redirectUrl;
+        } else if (data.demo) {
+          window.location.href = `/book/success?order_id=${data.orderId}&status=demo`;
         } else {
           setErrors({ submit: "Snap belum dimuat. Refresh halaman dan coba lagi." });
           setIsSubmitting(false);
@@ -117,6 +160,21 @@ export default function BookingWizard() {
 
   const selectedTheme = themes.find((t) => t.slug === form.themeSlug);
   const selectedPackage = packages.find((p) => p.id === form.packageId);
+
+  const getPackageIcon = (name: string) => {
+    if (name.toLowerCase().includes("premium")) return Crown;
+    if (name.toLowerCase().includes("populer")) return Sparkles;
+    return Star;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto flex flex-col items-center justify-center py-20 gap-4">
+        <Loader2 className="w-8 h-8 text-[#D4A843] animate-spin" />
+        <p className="text-white/40 font-[family-name:var(--font-body)]">Memuat data tema & paket...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -139,22 +197,32 @@ export default function BookingWizard() {
       {step === 0 && (
         <div className="space-y-6 animate-[fade-in_0.3s_ease-out]">
           <h2 className="text-2xl font-[family-name:var(--font-display)] text-white">Pilih Tema Undangan</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {themes.map((t) => (
-              <button key={t.slug} onClick={() => update("themeSlug", t.slug)} className={`p-6 rounded-2xl border text-left transition-all ${
-                form.themeSlug === t.slug ? "border-[#D4A843] bg-[#D4A843]/5 scale-[1.02]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-              }`}>
-                <div className="flex items-center gap-3">
-                  <Heart className="w-8 h-8" style={{ color: t.accent }} />
-                  <div>
-                    <h3 className="text-white font-semibold font-[family-name:var(--font-body)]">{t.name}</h3>
-                    <p className="text-xs text-white/40 font-[family-name:var(--font-body)]">Gaya {t.style}</p>
+          {themes.length === 0 ? (
+            <p className="text-white/40 text-center py-8 font-[family-name:var(--font-body)]">Belum ada tema tersedia.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {themes.map((t) => (
+                <button key={t.slug} onClick={() => update("themeSlug", t.slug)} className={`p-5 rounded-2xl border text-left transition-all ${
+                  form.themeSlug === t.slug ? "border-[#D4A843] bg-[#D4A843]/5 scale-[1.02]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {t.thumbnailUrl ? (
+                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/5 relative">
+                        <img src={t.thumbnailUrl} alt={t.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <Heart className="w-8 h-8 text-[#D4A843] shrink-0" />
+                    )}
+                    <div>
+                      <h3 className="text-white font-semibold font-[family-name:var(--font-body)]">{t.name}</h3>
+                      <p className="text-xs text-white/40 font-[family-name:var(--font-body)]">{t.category?.name} · {t.styleGroup}</p>
+                    </div>
                   </div>
-                </div>
-                {form.themeSlug === t.slug && <Check className="w-5 h-5 text-[#D4A843] mt-3" />}
-              </button>
-            ))}
-          </div>
+                  {form.themeSlug === t.slug && <Check className="w-5 h-5 text-[#D4A843] mt-3" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -162,25 +230,32 @@ export default function BookingWizard() {
       {step === 1 && (
         <div className="space-y-6 animate-[fade-in_0.3s_ease-out]">
           <h2 className="text-2xl font-[family-name:var(--font-display)] text-white">Pilih Paket</h2>
-          <div className="grid grid-cols-1 gap-4">
-            {packages.map((p) => (
-              <button key={p.id} onClick={() => update("packageId", p.id)} className={`p-6 rounded-2xl border text-left transition-all flex items-center justify-between ${
-                form.packageId === p.id ? "border-[#D4A843] bg-[#D4A843]/5" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-              }`}>
-                <div className="flex items-center gap-4">
-                  <p.icon className={`w-8 h-8 ${form.packageId === p.id ? "text-[#D4A843]" : "text-white/30"}`} />
-                  <div>
-                    <h3 className="text-white font-semibold font-[family-name:var(--font-body)]">{p.name}</h3>
-                    <p className="text-xs text-white/40 font-[family-name:var(--font-body)]">{p.maxGuests} tamu · {p.maxPhotos} foto · {p.revisions}x revisi</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-bold text-[#D4A843] font-[family-name:var(--font-display)]">Rp {p.price.toLocaleString("id-ID")}</span>
-                  {form.packageId === p.id && <Check className="w-5 h-5 text-[#D4A843] mt-1 ml-auto" />}
-                </div>
-              </button>
-            ))}
-          </div>
+          {packages.length === 0 ? (
+            <p className="text-white/40 text-center py-8 font-[family-name:var(--font-body)]">Belum ada paket tersedia.</p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {packages.map((p) => {
+                const PkgIcon = getPackageIcon(p.name);
+                return (
+                  <button key={p.id} onClick={() => update("packageId", p.id)} className={`p-6 rounded-2xl border text-left transition-all flex items-center justify-between ${
+                    form.packageId === p.id ? "border-[#D4A843] bg-[#D4A843]/5" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}>
+                    <div className="flex items-center gap-4">
+                      <PkgIcon className={`w-8 h-8 ${form.packageId === p.id ? "text-[#D4A843]" : "text-white/30"}`} />
+                      <div>
+                        <h3 className="text-white font-semibold font-[family-name:var(--font-body)]">{p.name}</h3>
+                        <p className="text-xs text-white/40 font-[family-name:var(--font-body)]">{p.maxGuests.toLocaleString()} tamu · {p.maxPhotos} foto · {p.maxRevisions}x revisi</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-[#D4A843] font-[family-name:var(--font-display)]">Rp {p.price.toLocaleString("id-ID")}</span>
+                      {form.packageId === p.id && <Check className="w-5 h-5 text-[#D4A843] mt-1 ml-auto" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

@@ -8,7 +8,10 @@ import {
   ShoppingCart, 
   LogOut,
   Menu,
-  X
+  X,
+  Tag,
+  MessageSquare,
+  BarChart3,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -34,8 +37,11 @@ export default function AdminLayout({
 
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Tema Katalog", href: "/admin/themes", icon: Palette },
     { name: "Pesanan", href: "/admin/orders", icon: ShoppingCart },
+    { name: "Tema Katalog", href: "/admin/themes", icon: Palette },
+    { name: "Paket & Harga", href: "/admin/packages", icon: Tag },
+    { name: "Moderasi Ucapan", href: "/admin/guestbook", icon: MessageSquare },
+    { name: "Laporan", href: "/admin/reports", icon: BarChart3 },
   ];
 
   return (

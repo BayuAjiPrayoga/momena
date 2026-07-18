@@ -103,6 +103,53 @@ function OverviewTab({ order, inviteUrl }: { order: any, inviteUrl: string }) {
         <StatCard icon={<MessageSquare className="text-blue-400" />} label="Total Ucapan" value={order._count.guestbook} />
       </section>
 
+      {/* RSVP Donut Chart */}
+      {order.guests.length > 0 && (() => {
+        const maybeCount = order.guests.filter((g: any) => g.rsvpStatus === "MAYBE").length;
+        const pendingCount = order.guests.filter((g: any) => g.rsvpStatus === "PENDING").length;
+        const total = order.guests.length;
+        const segments = [
+          { label: "Hadir", count: order.guests.filter((g: any) => g.rsvpStatus === "ATTENDING").length, color: "#34d399" },
+          { label: "Tidak Hadir", count: notAttendingCount, color: "#f87171" },
+          { label: "Mungkin", count: maybeCount, color: "#fbbf24" },
+          { label: "Belum Respons", count: pendingCount, color: "#6b7280" },
+        ].filter(s => s.count > 0);
+
+        let accumulated = 0;
+        const gradientParts = segments.map(s => {
+          const start = (accumulated / total) * 100;
+          accumulated += s.count;
+          const end = (accumulated / total) * 100;
+          return `${s.color} ${start}% ${end}%`;
+        });
+
+        return (
+          <section className="bg-[#1a1510] border border-white/10 rounded-2xl p-6">
+            <h3 className="text-lg font-[family-name:var(--font-display)] mb-4">Rekap RSVP</h3>
+            <div className="flex items-center gap-8">
+              <div
+                className="w-32 h-32 rounded-full shrink-0 relative"
+                style={{ background: `conic-gradient(${gradientParts.join(', ')})` }}
+              >
+                <div className="absolute inset-3 bg-[#1a1510] rounded-full flex items-center justify-center">
+                  <span className="text-xl font-bold text-white">{total}</span>
+                </div>
+              </div>
+              <div className="space-y-2 flex-1">
+                {segments.map(s => (
+                  <div key={s.label} className="flex items-center gap-2 text-sm">
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                    <span className="text-white/60 flex-1">{s.label}</span>
+                    <span className="text-white font-medium">{s.count}</span>
+                    <span className="text-white/30 text-xs">({((s.count / total) * 100).toFixed(0)}%)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* RSVP Table */}
         <section className="space-y-4">
