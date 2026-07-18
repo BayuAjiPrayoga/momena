@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod/v4";
 
-// GET — List all active themes (public)
-export async function GET() {
+// GET — List themes (public: active only, admin: all with ?all=true)
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const showAll = searchParams.get("all") === "true";
+
     const themes = await prisma.theme.findMany({
-      where: { isActive: true },
+      where: showAll ? {} : { isActive: true },
       include: { category: true },
       orderBy: { createdAt: "desc" },
     });

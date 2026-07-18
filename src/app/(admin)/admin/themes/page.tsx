@@ -83,9 +83,9 @@ export default async function AdminThemesPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                      <Link href={`/admin/themes/${theme.id}/edit`} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
                         <Edit className="w-4 h-4" />
-                      </button>
+                      </Link>
                       <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg" title="Hanya lewat database untuk sementara">
                         <Trash2 className="w-4 h-4" />
                       </button>
