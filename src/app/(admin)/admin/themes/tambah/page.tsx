@@ -38,20 +38,13 @@ export default function AddThemePage() {
   });
 
   useEffect(() => {
-    // Fetch categories for dropdown
-    // Idealnya kita buat API terpisah, atau pakai server action. 
-    // Karena ini halaman client, kita bisa panggil API public jika ada, atau buat dummy fetch
-    fetch('/api/admin/categories') // Asumsi kita akan buat API ini nanti
+    fetch('/api/admin/categories')
       .then(res => res.json())
       .then(data => {
         if(data.categories) setCategories(data.categories);
       })
       .catch(() => {
-        // Fallback hardcoded for now
-        setCategories([
-          { id: "cat-wedding", name: "Wedding" },
-          { id: "cat-khitanan", name: "Khitanan" }
-        ]);
+        setError("Gagal memuat daftar kategori. Pastikan database sudah di-seed.");
       });
   }, []);
 

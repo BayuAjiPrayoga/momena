@@ -69,14 +69,12 @@ Selama proses pengembangan, sistem *hardcode* statis di halaman publik telah dih
    - **Lokasi:** `src/lib/dummy-data.ts` & `src/app/themes-preview/[themeKey]/page.tsx`
    - **Status:** **Disengaja (By Design).** Data *dummy* di sini (seperti nama pengantin palsu, galeri *dummy*, dan acara *dummy*) memang dibutuhkan agar calon pembeli bisa melihat pratinjau tema yang berfungsi penuh di halaman Katalog sebelum mereka membeli.
    
-2. **Fallback API Kategori (Admin Dashboard)**
-   - **Lokasi:** `src/app/(admin)/admin/themes/tambah/page.tsx` (Baris 50)
-   - **Status:** **Technical Debt.** Saat Admin menambahkan tema baru, terdapat kode *fetch* ke `/api/admin/categories`. Jika gagal (karena API belum dibuat secara utuh), sistem akan *fallback* menggunakan *array hardcode* `[{ id: "cat-wedding", name: "Wedding" }, ...]`. 
-   - **Aksi:** Perlu dibuatkan *endpoint* GET `/api/admin/categories` yang menarik data asli dari `prisma.eventCategory`.
-
-3. **Fallback Midtrans Checkout**
+2. **Fallback Midtrans Checkout**
    - **Lokasi:** `src/app/api/checkout/route.ts` (Baris 79)
    - **Status:** **Testing/Development.** Jika `MIDTRANS_SERVER_KEY` tidak disetel di `.env`, kode akan melakukan *bypass* pembayaran dan menghasilkan Token Midtrans *dummy*. Ini ditujukan murni agar sistem tetap bisa ditest di *local environment* tanpa Midtrans, namun harus dihapus atau dijaga ketat di tahap *Production*.
+
+3. ~~**Fallback API Kategori (Admin Dashboard)**~~ ✅ **Sudah Diperbaiki.**
+   - API `/api/admin/categories` sudah berfungsi penuh menarik data dari `prisma.eventCategory`. *Hardcode fallback* dihapus, diganti dengan pesan error jika koneksi database gagal.
 
 ---
 *Dibuat oleh Momena Labs Dev Team - 2026*
