@@ -15,12 +15,14 @@ export function getDummyInvitationData(guestName?: string): InvitationData {
         fullName: 'Ahmad Rizky Pratama, S.Kom',
         parents: 'Putra dari Bpk. Hendra Pratama & Ibu Sri Wahyuni',
         description: 'Anak kedua dari tiga bersaudara',
+        photo: '/images/themes/sunda/cowo.png',
       },
       person2: {
         name: 'Fatimah',
         fullName: 'Fatimah Azzahra, S.Pd',
         parents: 'Putri dari Bpk. Muhammad Yusuf & Ibu Aisyah Rahmawati',
         description: 'Anak pertama dari dua bersaudara',
+        photo: '/images/themes/sunda/cewe.png',
       },
     },
 
@@ -49,15 +51,15 @@ export function getDummyInvitationData(guestName?: string): InvitationData {
     },
 
     gallery: [
-      { url: '/images/placeholder/gallery-1.jpg', caption: 'Pre-wedding di Bali' },
-      { url: '/images/placeholder/gallery-2.jpg', caption: 'Sunset moment' },
-      { url: '/images/placeholder/gallery-3.jpg', caption: 'Di antara pepohonan' },
-      { url: '/images/placeholder/gallery-4.jpg', caption: 'Pantai Kuta' },
-      { url: '/images/placeholder/gallery-5.jpg', caption: 'Candid moment' },
-      { url: '/images/placeholder/gallery-6.jpg', caption: 'Love in the air' },
+      { url: '/images/themes/sunda/1.png', caption: 'Pre-wedding' },
+      { url: '/images/themes/sunda/2.png', caption: 'Momen bahagia' },
+      { url: '/images/themes/sunda/3.png', caption: 'Bersama' },
+      { url: '/images/themes/sunda/4.png', caption: 'Senyum' },
+      { url: '/images/themes/sunda/1.png', caption: 'Pre-wedding' },
+      { url: '/images/themes/sunda/2.png', caption: 'Momen bahagia' },
     ],
 
-    coverPhoto: '/images/placeholder/cover.jpg',
+    coverPhoto: '/images/themes/sunda/foto-utama.jpg',
     musicUrl: '/audio/sunda-music.mp3',
 
     loveStory: [
