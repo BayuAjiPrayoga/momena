@@ -126,25 +126,25 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
           <div ref={contentRef} className={`w-full flex flex-col items-center transition-all duration-1000 transform ${isOpened ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible h-0 overflow-hidden'}`}>
             
             {/* ─── Main Greeting (Large Arch) ─── */}
-            <section className="w-full px-5 py-10">
-              <div className="bg-[#fcfaf7]/95 backdrop-blur-sm rounded-t-[140px] rounded-b-[140px] border-4 border-[#9c7b4a]/20 p-8 py-20 text-center shadow-md relative">
+            <section className="w-full px-5 py-6 min-h-[100svh] flex flex-col justify-center">
+              <div className="bg-[#fcfaf7]/95 backdrop-blur-sm rounded-t-[200px] rounded-b-[200px] border-4 border-[#9c7b4a]/20 p-8 py-20 text-center shadow-md relative flex-grow flex flex-col items-center justify-center min-h-[85svh]">
                 {/* Optional decorative lines */}
-                <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-[#9c7b4a]/20 rounded-full" />
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-[#9c7b4a]/20 rounded-full" />
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[60%] h-[1px] bg-[#9c7b4a]/30 rounded-full" />
+                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[60%] h-[1px] bg-[#9c7b4a]/30 rounded-full" />
 
-                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#54463a] mb-6">Wedding Invitation</p>
-                <h2 className="text-5xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-4">
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#54463a] mb-8">Wedding Invitation</p>
+                <h2 className="text-6xl font-[family-name:var(--font-script)] text-[#9c7b4a] mb-6 leading-tight">
                   {data.couple.person1.name} <br/> 
-                  <span className="text-2xl text-[#54463a]">&</span> <br/> 
+                  <span className="text-3xl text-[#54463a] block my-2">&</span>
                   {data.couple.person2.name}
                 </h2>
                 {data.events[0] && (
-                  <p className="text-xs font-bold tracking-[0.2em] text-[#54463a] mt-6">
+                  <p className="text-xs font-bold tracking-[0.3em] text-[#54463a] mt-8">
                     {data.events[0].date}
                   </p>
                 )}
                 
-                <div className="mt-12 w-8 h-12 border border-[#54463a] rounded-full mx-auto flex items-center justify-center animate-bounce">
+                <div className="mt-16 w-8 h-12 border border-[#54463a] rounded-full mx-auto flex items-center justify-center animate-bounce">
                   <ArrowDown className="w-4 h-4 text-[#54463a]" />
                 </div>
               </div>
