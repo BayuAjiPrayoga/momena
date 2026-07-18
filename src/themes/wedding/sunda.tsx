@@ -56,7 +56,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
       )}
 
       {/* Main Container - Centered Mobile Layout for Desktop */}
-      <div className="w-full max-w-[414px] mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden">
+      <div className="w-full md:max-w-[430px] mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden">
         
         {/* Floral Background - Fixed behind content */}
         <div 
