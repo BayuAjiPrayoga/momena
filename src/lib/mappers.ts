@@ -34,11 +34,13 @@ export function mapOrderToInvitationData(order: any, guestName?: string): Invita
         name: person1Name,
         fullName: evt.person1FullName || person1Name,
         parents: evt.person1Parents || "",
+        photo: evt.person1Photo || undefined,
       },
       person2: {
         name: person2Name,
         fullName: evt.person2FullName || person2Name,
         parents: evt.person2Parents || "",
+        photo: evt.person2Photo || undefined,
       },
     },
     events: [
@@ -64,7 +66,7 @@ export function mapOrderToInvitationData(order: any, guestName?: string): Invita
       slug: "guest-slug", // TODO: match guest slug logic if needed
     },
     gallery: evt.gallery || [],
-    coverPhoto: "/images/themes/lux-art-1-thumb.jpg",
+    coverPhoto: evt.coverPhotoUrl || order.theme?.thumbnailUrl || "/images/themes/lux-art-1-thumb.jpg",
     musicUrl: evt.musicUrl,
     giftInfo: evt.giftInfo || { bankAccounts: [] },
     features: order.package?.features || {

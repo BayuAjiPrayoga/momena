@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, musicUrl, bankName, bankNumber, bankAccountName } = body;
+    const { orderId, musicUrl, bankName, bankNumber, bankAccountName, coverPhoto, bridePhoto, groomPhoto } = body;
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
@@ -24,7 +24,10 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update fields
-    evt.musicUrl = musicUrl;
+    if (musicUrl !== undefined) evt.musicUrl = musicUrl;
+    if (coverPhoto) evt.coverPhotoUrl = coverPhoto;
+    if (bridePhoto) evt.person2Photo = bridePhoto;
+    if (groomPhoto) evt.person1Photo = groomPhoto;
     
     // Update gift info (bank account)
     if (bankName || bankNumber || bankAccountName) {

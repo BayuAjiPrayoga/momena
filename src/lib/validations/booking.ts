@@ -40,6 +40,17 @@ export const eventDataSchema = z.object({
   resepsiVenue: z.string().min(3, "Nama venue resepsi wajib diisi"),
   resepsiAddress: z.string().min(5, "Alamat resepsi wajib diisi"),
   resepsiMapsUrl: z.string().url("URL Maps harus valid").optional().or(z.literal("")),
+
+  // Media (Fotos & Gallery)
+  coverPhotoUrl: z.string().optional(),
+  person1Photo: z.string().optional(),
+  person2Photo: z.string().optional(),
+  gallery: z.array(z.string()).optional(),
+
+  // Amplop Digital (Gift)
+  bankName: z.string().optional(),
+  bankAccount: z.string().optional(),
+  bankAccountName: z.string().optional(),
 });
 
 // Step 4: Data Klien (Guest Checkout)

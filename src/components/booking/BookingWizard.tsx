@@ -10,13 +10,15 @@ import {
   Sparkles,
   Star,
   Crown,
-  Users,
   Calendar,
   User,
   CreditCard,
   Loader2,
+  Image as ImageIcon,
+  Landmark
 } from "lucide-react";
 import type { FullBookingData } from "@/lib/validations/booking";
+import ImageUpload from "@/components/ui/ImageUpload";
 
 interface ThemeOption {
   slug: string;
@@ -41,6 +43,7 @@ const steps = [
   { label: "Tema", icon: Heart },
   { label: "Paket", icon: Star },
   { label: "Data Acara", icon: Calendar },
+  { label: "Media & Rekening", icon: ImageIcon },
   { label: "Data Anda", icon: User },
   { label: "Checkout", icon: CreditCard },
 ];
@@ -68,6 +71,8 @@ export default function BookingWizard() {
     person2Name: "", person2FullName: "", person2Parents: "",
     akadDate: "", akadTime: "", akadVenue: "", akadAddress: "", akadMapsUrl: "",
     resepsiDate: "", resepsiTime: "", resepsiVenue: "", resepsiAddress: "", resepsiMapsUrl: "",
+    coverPhotoUrl: "", person1Photo: "", person2Photo: "",
+    bankName: "", bankAccount: "", bankAccountName: "",
     customerName: "", customerEmail: "", customerPhone: "",
   });
 
@@ -82,7 +87,6 @@ export default function BookingWizard() {
 
         if (themesRes.ok) {
           const themesData = await themesRes.json();
-          // The themes API might return { themes: [...] } or be from the katalog
           setThemes(themesData.themes || []);
         }
 
@@ -112,6 +116,10 @@ export default function BookingWizard() {
       return !!(form.person1Name && form.person2Name && form.akadDate && form.akadVenue && form.resepsiDate && form.resepsiVenue);
     }
     if (step === 3) {
+      // Step Media is optional, but it's good practice. We can let them proceed even if empty.
+      return true;
+    }
+    if (step === 4) {
       return !!(form.customerName && form.customerEmail && form.customerPhone);
     }
     return true;
@@ -298,8 +306,54 @@ export default function BookingWizard() {
         </div>
       )}
 
-      {/* ─── Step 3: Data Customer ─── */}
+      {/* ─── Step 3: Media & Rekening (NEW) ─── */}
       {step === 3 && (
+        <div className="space-y-8 animate-[fade-in_0.3s_ease-out]">
+          <h2 className="text-2xl font-[family-name:var(--font-display)] text-white flex items-center gap-2">
+            <ImageIcon className="w-6 h-6 text-[#D4A843]" /> Media & Foto
+          </h2>
+          <p className="text-sm text-white/50 -mt-4 font-[family-name:var(--font-body)]">
+            Upload foto untuk cover undangan dan profil mempelai. Kosongkan jika belum siap (bisa diubah nanti di dashboard).
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <ImageUpload 
+              label="Foto Cover Undangan" 
+              value={form.coverPhotoUrl} 
+              onChange={(url) => update("coverPhotoUrl", url)} 
+            />
+            <ImageUpload 
+              label="Foto Mempelai Pria" 
+              value={form.person1Photo} 
+              onChange={(url) => update("person1Photo", url)} 
+            />
+            <ImageUpload 
+              label="Foto Mempelai Wanita" 
+              value={form.person2Photo} 
+              onChange={(url) => update("person2Photo", url)} 
+            />
+          </div>
+
+          <div className="pt-8 border-t border-white/10 space-y-6">
+            <h2 className="text-2xl font-[family-name:var(--font-display)] text-white flex items-center gap-2">
+              <Landmark className="w-6 h-6 text-[#D4A843]" /> Amplop Digital
+            </h2>
+            <p className="text-sm text-white/50 -mt-4 font-[family-name:var(--font-body)]">
+              Masukkan data rekening bank untuk fitur pengiriman hadiah/amplop digital tamu.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Nama Bank / E-Wallet" value={form.bankName || ""} onChange={(v) => update("bankName", v)} placeholder="Contoh: BCA / GoPay" />
+              <Input label="Nomor Rekening" value={form.bankAccount || ""} onChange={(v) => update("bankAccount", v)} placeholder="1234567890" />
+              <div className="sm:col-span-2">
+                <Input label="Nama Pemilik Rekening" value={form.bankAccountName || ""} onChange={(v) => update("bankAccountName", v)} placeholder="Sesuai buku tabungan" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Step 4: Data Customer ─── */}
+      {step === 4 && (
         <div className="space-y-6 animate-[fade-in_0.3s_ease-out]">
           <h2 className="text-2xl font-[family-name:var(--font-display)] text-white">Data Pemesan</h2>
           <p className="text-sm text-white/40 font-[family-name:var(--font-body)]">Untuk keperluan invoice dan notifikasi status pesanan.</p>
@@ -311,8 +365,8 @@ export default function BookingWizard() {
         </div>
       )}
 
-      {/* ─── Step 4: Review & Checkout ─── */}
-      {step === 4 && (
+      {/* ─── Step 5: Review & Checkout ─── */}
+      {step === 5 && (
         <div className="space-y-6 animate-[fade-in_0.3s_ease-out]">
           <h2 className="text-2xl font-[family-name:var(--font-display)] text-white">Review Pesanan</h2>
 
@@ -350,7 +404,7 @@ export default function BookingWizard() {
           </button>
         ) : <div />}
 
-        {step < 4 ? (
+        {step < 5 ? (
           <button
             onClick={() => setStep(step + 1)}
             disabled={!canProceed()}
