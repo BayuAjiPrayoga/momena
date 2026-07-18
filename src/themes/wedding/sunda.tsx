@@ -56,7 +56,7 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
       )}
 
       {/* Main Container - Centered Mobile Layout for Desktop */}
-      <div className="w-full max-w-[480px] mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden">
+      <div className="w-full max-w-[414px] mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden">
         
         {/* Floral Background - Fixed behind content */}
         <div 
@@ -208,11 +208,25 @@ export default function SundaTheme({ data, guestName }: ThemeProps & { guestName
               </div>
             </section>
 
-            {/* ─── Separator Photo ─── */}
-            <section className="w-full h-64 relative my-6">
+            {/* ─── Separator Photo & Countdown ─── */}
+            <section className="w-full h-[500px] relative my-6">
               <Image src={data.coverPhoto || "/images/themes/sunda-thumb.png"} alt="Separator" fill className="object-cover" />
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <Heart className="w-8 h-8 text-white/50 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col items-center justify-end pb-12">
+                <h3 className="text-white font-[family-name:var(--font-script)] text-4xl mb-6 drop-shadow-lg leading-tight text-center">Counting Days<br/>To Big Days</h3>
+                
+                {/* Countdown Timer */}
+                <div className="flex gap-2 mb-8 px-4 w-full justify-center">
+                  {['Hari', 'Jam', 'Menit', 'Detik'].map((unit, idx) => (
+                    <div key={idx} className="bg-[#a58661] text-white flex-1 h-16 rounded-xl flex flex-col items-center justify-center shadow-lg border border-white/20">
+                      <span className="text-xl font-bold font-mono">0</span>
+                      <span className="text-[10px] uppercase tracking-widest">{unit}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button className="px-6 py-2 border border-white text-white rounded-full text-[10px] uppercase tracking-widest hover:bg-white hover:text-[#54463a] transition-colors">
+                  Save The Date
+                </button>
               </div>
             </section>
 
