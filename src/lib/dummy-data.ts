@@ -58,7 +58,7 @@ export function getDummyInvitationData(guestName?: string): InvitationData {
     ],
 
     coverPhoto: '/images/placeholder/cover.jpg',
-    musicUrl: '/audio/wedding-bg.mp3',
+    musicUrl: '/audio/sunda-music.mp3',
 
     loveStory: [
       {
