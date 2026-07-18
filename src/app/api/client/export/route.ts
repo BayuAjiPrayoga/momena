@@ -43,8 +43,8 @@ export async function GET(req: NextRequest) {
       csvContent += `"${msg.name}","${cleanMsg}","${dateStr}"\n`;
     });
 
-    // Create response with CSV headers
-    const response = new NextResponse(csvContent);
+    // Create response with CSV headers and BOM for Excel
+    const response = new NextResponse("\uFEFF" + csvContent);
     response.headers.set("Content-Type", "text/csv; charset=utf-8");
     response.headers.set("Content-Disposition", `attachment; filename="data-tamu-${order.orderNumber}.csv"`);
     

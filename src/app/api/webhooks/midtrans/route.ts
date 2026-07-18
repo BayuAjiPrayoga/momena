@@ -3,6 +3,7 @@ import { verifySignature } from "@/lib/midtrans";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/wamify";
 import { nanoid } from "nanoid";
+import { sendPaymentSuccessEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -82,7 +83,16 @@ export async function POST(req: NextRequest) {
         await sendWhatsAppMessage({ to: order.customer.phone, message: msg });
       }
 
-      console.log(`[Midtrans Webhook] ✅ SUCCESS - WA Notification sent for ${order_id}`);
+      sendPaymentSuccessEmail({
+        customerName: order.customer.name,
+        customerEmail: order.customer.email,
+        orderNumber: order.orderNumber,
+        themeName: order.theme.name,
+        inviteUrl,
+        clientUrl,
+      }).catch(console.error);
+
+      console.log(`[Midtrans Webhook] ✅ SUCCESS - WA & Email Notification sent for ${order_id}`);
     } else if (isFailed) {
       await prisma.order.update({
         where: { id: order.id },

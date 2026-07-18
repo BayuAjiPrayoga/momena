@@ -3,6 +3,7 @@ import { createSnapTransaction } from "@/lib/midtrans";
 import { fullBookingSchema } from "@/lib/validations/booking";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
+import { sendOrderCreatedEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,6 +75,16 @@ export async function POST(req: NextRequest) {
         eventData: JSON.stringify(eventData), // Simpan data acara
       }
     });
+
+    // Kirim email notifikasi (fire and forget)
+    sendOrderCreatedEmail({
+      customerName: customer.name,
+      customerEmail: customer.email,
+      orderNumber,
+      themeName: theme.name,
+      packageName: pkg.name,
+      amount: pkg.price,
+    }).catch(console.error);
 
     if (!process.env.MIDTRANS_SERVER_KEY) {
       // Dummy mode kalau belum di set

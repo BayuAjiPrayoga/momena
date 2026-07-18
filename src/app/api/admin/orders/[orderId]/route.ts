@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
 import { sendWhatsAppMessage } from "@/lib/wamify";
+import { sendPaymentSuccessEmail } from "@/lib/email";
 
 // GET — Detail order
 export async function GET(
@@ -73,7 +74,7 @@ export async function PUT(
         },
       });
 
-      // Send WA notification
+      // Send WA & Email notification
       const inviteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/u/${updateData.slug}`;
       const clientUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/client/${order.id}`;
       const msg = `Halo ${order.customer.name}! 🎉\n\nPembayaran untuk undangan digital (Tema: ${order.theme.name}) telah diverifikasi.\n\nUndangan Anda sudah aktif:\n🌐 ${inviteUrl}\n\nPanel Klien:\n📊 ${clientUrl}\n\nTerima kasih telah menggunakan Momena Labs!`;
@@ -81,6 +82,15 @@ export async function PUT(
       if (order.customer.phone) {
         await sendWhatsAppMessage({ to: order.customer.phone, message: msg }).catch(console.error);
       }
+
+      sendPaymentSuccessEmail({
+        customerName: order.customer.name,
+        customerEmail: order.customer.email,
+        orderNumber: order.orderNumber,
+        themeName: order.theme.name,
+        inviteUrl,
+        clientUrl,
+      }).catch(console.error);
     } else if (action === "reject_payment") {
       updateData.status = "CANCELLED";
     } else if (action === "archive") {
